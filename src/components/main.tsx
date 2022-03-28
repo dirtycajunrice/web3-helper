@@ -158,7 +158,7 @@ const Main: React.FC = () => {
                             {filter !== "all" && (
                                 <Button
                                     variant="contained"
-                                    disabled={currentChain?.toString() !== filteredChainId}
+                                    disabled={currentChain?.toString() === filteredChainId}
                                     onClick={() => switchNetwork(Number(filteredChainId))}
                                 >
                                     Add {filteredChain.name}

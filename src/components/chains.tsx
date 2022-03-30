@@ -101,8 +101,8 @@ export const CHAINS: { [chainId: number]: ChainInformation } = {
     },
     53935: {
         urls: [
+            'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
             'https://rpc.dfkchain.com',
-            'https://api-dfk.avax.network/rpc'
         ],
         name: 'DFK Chain',
         nativeCurrency: JEWEL,

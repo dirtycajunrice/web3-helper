@@ -9,6 +9,8 @@ import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 
 const Bridge = "/api/v1/transactions/recent?only_pending=true&limit=4999"
 
+
+
 interface txData {
     from_address: string
     from_chain_id: number
@@ -62,11 +64,14 @@ const SynapsePending: React.FC = () => {
                     "Access-Control-Allow-Origin": "*"
                 },
             }
-            const response = await fetch(Bridge, options)
+            let bridge = Bridge
+            if (process.env.NODE_ENV !== "development") {
+                bridge = "https://explorer.dorime.org" + Bridge
+            }
+            const response = await fetch(bridge, options)
 
             const data = await response.text()
             const json: txData[] = JSON.parse(data)
-            console.log(json)
             const relevant = json.filter(trans => trans.from_chain_id === 53935 || trans.to_chain_id === 53935)
             // @ts-ignore
             const rows = []

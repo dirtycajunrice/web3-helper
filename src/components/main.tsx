@@ -36,7 +36,6 @@ const Main: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar();
     const { data, error, isPending } = useAsync(loadTokenList)
     const [filter, setFilter] = useState('all')
-    const [page, setPage] = useState("tokens")
     const [provider, setProvider] = useState<ethers.providers.Web3Provider|null>(null)
     const [wbLoad, setWbLoad] = useState<boolean>(false)
     const [account, setAccount] = useState<string|null>(null)
@@ -134,12 +133,11 @@ const Main: React.FC = () => {
         })
     }
 
-    if (page === "synapse") return (
-        <SynapsePending />
-    )
-
     return (
         <Box sx={{ width: 0.8 }}>
+            <p>
+                DirtyCajunRice's Metamask Helper
+            </p>
             <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
                 <Grid item xs={12} key="top">
                     <Card sx={{ }}>
@@ -179,9 +177,6 @@ const Main: React.FC = () => {
                             >
                                 {account ? short(account) : "Connect Wallet"}
                             </LoadingButton>
-                            <Button variant="contained" onClick={() => setPage("synapse")}>
-                                Synapse
-                            </Button>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -222,7 +217,6 @@ const Main: React.FC = () => {
                 )}
             </Grid>
         </Box>
-
     )
 }
 

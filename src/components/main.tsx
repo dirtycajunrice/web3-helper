@@ -22,6 +22,7 @@ import { ethers } from "ethers";
 import {useSnackbar} from "notistack";
 
 import { ReactComponent as MetamaskSVG } from '../assets/images/metamask-logo.svg'
+import SynapsePending from "./synapsePending";
 
 const TokenListURL = "https://raw.githubusercontent.com/tradescrow/token-lists/main/build/tradescrow-all.tokenlist.json"
 
@@ -35,6 +36,7 @@ const Main: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar();
     const { data, error, isPending } = useAsync(loadTokenList)
     const [filter, setFilter] = useState('all')
+    const [page, setPage] = useState("tokens")
     const [provider, setProvider] = useState<ethers.providers.Web3Provider|null>(null)
     const [wbLoad, setWbLoad] = useState<boolean>(false)
     const [account, setAccount] = useState<string|null>(null)
@@ -60,7 +62,6 @@ const Main: React.FC = () => {
         try {
             await p.send("eth_requestAccounts", []);
             const accounts = await p.listAccounts()
-            console.log("here2")
             if (accounts.length > 0) {
                 setAccount(accounts[0])
                 const network = await p.getNetwork()
@@ -96,7 +97,6 @@ const Main: React.FC = () => {
             setAccount(accounts[0])
             if (accounts.length > 0) {
                 setWbLoad(false)
-                console.log("here1", provider)
                 await connectWallet()
             }
             setWbLoad(false)
@@ -133,6 +133,10 @@ const Main: React.FC = () => {
             params: [getAddChainParameters(chainId)]
         })
     }
+
+    if (page === "synapse") return (
+        <SynapsePending />
+    )
 
     return (
         <Box sx={{ width: 0.8 }}>
@@ -175,6 +179,9 @@ const Main: React.FC = () => {
                             >
                                 {account ? short(account) : "Connect Wallet"}
                             </LoadingButton>
+                            <Button variant="contained" onClick={() => setPage("synapse")}>
+                                Synapse
+                            </Button>
                         </CardContent>
                     </Card>
                 </Grid>

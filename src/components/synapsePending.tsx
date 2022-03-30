@@ -68,10 +68,11 @@ const SynapsePending: React.FC = () => {
             if (process.env.NODE_ENV !== "development") {
                 bridge = "https://explorer.dorime.org" + Bridge
             }
-            const response = await fetch(bridge, options)
+            const response = await fetch(Bridge, options)
 
             const data = await response.text()
             const json: txData[] = JSON.parse(data)
+            console.log(json)
             const relevant = json.filter(trans => trans.from_chain_id === 53935 || trans.to_chain_id === 53935)
             // @ts-ignore
             const rows = []

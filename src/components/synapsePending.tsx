@@ -24,12 +24,6 @@ interface txData {
     to_chain_id: number
 }
 
-const loadTokenList = async (): Promise<TokenList> => {
-    const res = await fetch(Bridge)
-    if (!res.ok) throw new Error(res.statusText)
-    return res.json()
-}
-
 const valueFormatter = (params: GridValueFormatterParams) => {
      const a = params.value as string
     return a.slice(0, 4) + "..." + a.slice(a.length - 4, a.length);
@@ -55,14 +49,7 @@ const chainToName = (cid: number): string => {
     return "unknown"
 }
 const SynapsePending: React.FC = () => {
-    const { enqueueSnackbar } = useSnackbar();
-    const [filter, setFilter] = useState('all')
     const [tx, setTx] = useState<txData[]>()
-
-
-    const Success = (message: string) => enqueueSnackbar(message, {variant: "success"})
-    const Error = (message: string) => enqueueSnackbar(message, {variant: "error"})
-
 
     useEffect(() => {
         const GetPending = async () => {
@@ -103,20 +90,22 @@ const SynapsePending: React.FC = () => {
         }
         GetPending().catch((e) => console.log(e))
 
+        const interval = setInterval(GetPending, 30000)
+        return () => {
+            clearInterval(interval);
+        };
     }, [])
 
 
 
     return (
-        <Box sx={{ width: 0.555, height: "900px", backgroundColor: "white" }}>
+        <Box sx={{ width: 0.8, height: "900px", backgroundColor: "white" }}>
             <DataGrid
                 rows={tx || []}
                 columns={columns}
                 rowsPerPageOptions={[5,15,25,50,100,500]}
                 checkboxSelection
                 density="compact"
-                disableExtendRowFullWidth
-
             />
         </Box>
 

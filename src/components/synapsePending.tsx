@@ -64,7 +64,7 @@ const SynapsePending: React.FC = () => {
             if (process.env.NODE_ENV !== "development") {
                 bridge = "https://explorer.dorime.org" + Bridge
             }
-            const response = await fetch(Bridge, options)
+            const response = await fetch(bridge, options)
 
             const data = await response.text()
             const json: txData[] = JSON.parse(data)

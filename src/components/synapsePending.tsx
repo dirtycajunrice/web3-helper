@@ -68,7 +68,9 @@ const SynapsePending: React.FC = () => {
 
             const data = await response.text()
             const json: txData[] = JSON.parse(data)
-            const relevant = json.filter(trans => CIDS.includes(trans.from_chain_id) && CIDS.includes(trans.to_chain_id))
+            const relevant = json.filter(trans => (
+                CIDS.includes(trans.from_chain_id) && CIDS.includes(trans.to_chain_id) && ["xJEWEL", "JEWEL", "CRYSTAL", "xCRYSTAL"].includes(trans.sent_token_symbol)
+            ))
             // @ts-ignore
             const rows = []
             relevant.forEach((txd) => {
@@ -95,8 +97,6 @@ const SynapsePending: React.FC = () => {
             clearInterval(interval);
         };
     }, [])
-
-
 
     return (
         <Box sx={{ width: 0.8, height: "900px", backgroundColor: "white" }}>

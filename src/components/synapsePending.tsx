@@ -1,11 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {
-    Box,
-} from "@mui/material";
+import {Box,} from "@mui/material";
 import {Token, TokenList} from "../types";
 
 import {useSnackbar} from "notistack";
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import {DataGrid, GridColDef, GridValueFormatterParams} from '@mui/x-data-grid';
 
 const Bridge = "/api/v1/transactions/recent?only_pending=true&limit=4999"
 
@@ -32,19 +30,30 @@ const loadTokenList = async (): Promise<TokenList> => {
     return res.json()
 }
 
+const valueFormatter = (params: GridValueFormatterParams) => {
+     const a = params.value as string
+    return a.slice(0, 4) + "..." + a.slice(a.length - 4, a.length);
+}
 const columns: GridColDef[] = [
-    { field: 'id', headerName: 'tx' },
-    { field: 'from_chain_id', headerName: 'From Chain' },
-    { field: 'from_address', headerName: 'From Address' },
-    { field: 'kappa', headerName: 'Kappa' },
-    { field: 'sent_time', headerName: 'Time' },
-    { field: 'sent_token', headerName: 'Token' },
-    { field: 'sent_token_symbol', headerName: 'Symbol' },
-    { field: 'sent_value_formatted', headerName: 'Amount' },
-    { field: 'to_address', headerName: 'To Address' },
-    { field: 'to_chain_id', headerName: 'To Chain' },
+    { field: 'id', headerName: 'tx', headerAlign: 'center', align: 'center', valueFormatter },
+    { field: 'sent_time', headerName: 'Time', headerAlign: 'center', align: 'center', minWidth: 240 },
+    { field: 'from_chain_id', headerName: 'From Chain', headerAlign: 'center', align: 'center' },
+    { field: 'from_address', headerName: 'From Address', headerAlign: 'center', align: 'center', valueFormatter },
+    { field: 'kappa', headerName: 'Kappa', headerAlign: 'center', align: 'center', valueFormatter },
+    { field: 'sent_token', headerName: 'Token', headerAlign: 'center', align: 'center', valueFormatter },
+    { field: 'sent_token_symbol', headerName: 'Symbol', headerAlign: 'center', align: 'center' },
+    { field: 'sent_value_formatted', headerName: 'Amount', headerAlign: 'center', align: 'center' },
+    { field: 'to_address', headerName: 'To Address', headerAlign: 'center', align: 'center', valueFormatter },
+    { field: 'to_chain_id', headerName: 'To Chain', headerAlign: 'center', align: 'center' },
 ]
 
+const CIDS = [1666600000, 53935, 43114]
+const chainToName = (cid: number): string => {
+    if (cid === 1666600000) return "harmony"
+    if (cid === 53935) return "dfk"
+    if (cid === 43114) return "avalanche"
+    return "unknown"
+}
 const SynapsePending: React.FC = () => {
     const { enqueueSnackbar } = useSnackbar();
     const [filter, setFilter] = useState('all')
@@ -72,23 +81,21 @@ const SynapsePending: React.FC = () => {
 
             const data = await response.text()
             const json: txData[] = JSON.parse(data)
-            console.log(json)
-            const relevant = json.filter(trans => trans.from_chain_id === 53935 || trans.to_chain_id === 53935)
+            const relevant = json.filter(trans => CIDS.includes(trans.from_chain_id) && CIDS.includes(trans.to_chain_id))
             // @ts-ignore
             const rows = []
             relevant.forEach((txd) => {
                 rows.push({
                     from_address: txd.from_address,
-                    from_chain_id: txd.from_chain_id,
+                    from_chain_id: chainToName(txd.from_chain_id),
                     id: txd.from_tx_hash,
                     kappa: txd.kappa,
-                    pending: txd.pending,
-                    sent_time: txd.sent_time,
+                    sent_time: new Date(txd.sent_time*1000).toUTCString(),
                     sent_token: txd.sent_token,
                     sent_token_symbol: txd.sent_token_symbol,
                     sent_value_formatted: txd.sent_value_formatted,
                     to_address: txd.to_address,
-                    to_chain_id: txd.to_chain_id
+                    to_chain_id: chainToName(txd.to_chain_id)
                 })
             })
             // @ts-ignore
@@ -101,13 +108,15 @@ const SynapsePending: React.FC = () => {
 
 
     return (
-        <Box sx={{ width: 0.8, height: "900px", backgroundColor: "white" }}>
+        <Box sx={{ width: 0.555, height: "900px", backgroundColor: "white" }}>
             <DataGrid
                 rows={tx || []}
                 columns={columns}
-                pageSize={25}
-                rowsPerPageOptions={[5]}
+                rowsPerPageOptions={[5,15,25,50,100,500]}
                 checkboxSelection
+                density="compact"
+                disableExtendRowFullWidth
+
             />
         </Box>
 

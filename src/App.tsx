@@ -1,25 +1,29 @@
 import React from 'react';
 
-import './App.css';
-import Main from "./components/main";
 import {
-    BrowserRouter,
+    HashRouter,
     Routes,
     Route,
-    Navigate
+    Navigate,
 } from "react-router-dom";
+
+import './App.css';
+import Main from "./components/main";
 import SynapsePending from "./components/synapsePending";
+import EternalPages from './components/eternalPages';
+
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-          <BrowserRouter>
+          <HashRouter>
               <Routes>
                   <Route path="/" element={<Main />} />
                   <Route path="/synapse" element={<SynapsePending />} />
+                  <Route path="/eternal-pages" element={<EternalPages />} />
                   <Route path="/*" element={<Navigate replace to="/" />} />
               </Routes>
-          </BrowserRouter>
+          </HashRouter>
       </header>
     </div>
   );

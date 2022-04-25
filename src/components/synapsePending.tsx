@@ -2,12 +2,9 @@ import React, {useEffect, useState} from 'react';
 import {Box,} from "@mui/material";
 import {Token, TokenList} from "../types";
 
-import {useSnackbar} from "notistack";
 import {DataGrid, GridColDef, GridValueFormatterParams} from '@mui/x-data-grid';
 
 const Bridge = "/api/v1/transactions/recent?only_pending=true&limit=4999"
-
-
 
 interface txData {
     from_address: string

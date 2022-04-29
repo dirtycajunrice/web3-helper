@@ -8,17 +8,21 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  CardMedia, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Grid, keyframes, styled,
-  SvgIcon, TextField, Typography,
+  CardMedia,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  TextField,
+  Typography,
 } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
 
-import {getAddChainParameters} from "./chains";
-import { BigNumber, Contract, ethers, utils } from 'ethers';
+import { BigNumber, Contract, providers, utils } from 'ethers';
 import {useSnackbar} from "notistack";
 
-import { ReactComponent as MetamaskSVG } from '../assets/images/metamask-logo.svg'
+import RotatingBox from '../components/RotatingBox';
 
 const MiniERC1155ABI = [
   "function balanceOfBatch(address[] memory accounts, uint256[] memory ids) public view returns (uint256[] memory)",
@@ -85,24 +89,14 @@ const EternalStoryPages: {[index: number]: {[index: string]: string | number | B
   //},
 }
 
-const spin = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-`
-const RotatingBox = styled("div")({
-  animation: `${spin} 2s infinite linear`
-})
-const EternalPages: React.FC = () => {
+interface EternalPagesProps {
+  provider?: providers.Web3Provider
+  account?: string
+}
+
+const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider|null>(null)
-  const [wbLoad, setWbLoad] = useState<boolean>(false)
-  const [account, setAccount] = useState<string|null>(null)
-  const [currentChain, setCurrentChain] = useState<number|null>(null)
   const [pageBalances, setPageBalances] = useState(Array(9).fill(BigNumber.from(0)))
   const [transferDialogOpen, setTransferDialogOpen] = useState<boolean>(false);
   const [transferPageIndex, setTransferPageIndex] = useState<number>(0)
@@ -111,62 +105,8 @@ const EternalPages: React.FC = () => {
   const [toAddress, setToAddress] = useState<string>("")
   const [toQuantity, setToQuantity] = useState<number>(0)
 
-  const short = (a: string): string =>
-    a.slice(0, 4) + "..." + a.slice(a.length - 4, a.length);
-
   const Success = (message: string) => enqueueSnackbar(message, {variant: "success"})
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"})
-
-  const connectWallet = async () => {
-    let ethereum = (window as any).ethereum
-    if (!ethereum) return
-    const p = new ethers.providers.Web3Provider(ethereum)
-    if (!provider) setProvider(p)
-    setWbLoad(true)
-    try {
-      await p.send("eth_requestAccounts", []);
-      const accounts = await p.listAccounts()
-      if (accounts.length > 0) {
-        setAccount(accounts[0])
-        const network = await p.getNetwork()
-        setCurrentChain(network.chainId)
-        Success("Connected!")
-        ethereum.on('accountsChanged', (a: string[]) => {
-          if (a.length === 0) setAccount(null)
-          else setAccount(a[0])
-        });
-        ethereum.on('chainChanged', (chainId: string) => {
-          setCurrentChain(parseInt(chainId, 16))
-
-        });
-      }
-      setWbLoad(false)
-    } catch (e) {
-      // @ts-ignore
-      Error(e.message)
-      setWbLoad(false)
-    }
-
-  }
-
-  useEffect(() => {
-    if (provider) return;
-    let ethereum = (window as any).ethereum
-    if (!ethereum) return
-    const p = new ethers.providers.Web3Provider(ethereum)
-    setProvider(p)
-    const checkConnected = async () => {
-      setWbLoad(true)
-      const accounts = await p.listAccounts()
-      setAccount(accounts[0])
-      if (accounts.length > 0) {
-        setWbLoad(false)
-        await connectWallet()
-      }
-      setWbLoad(false)
-    }
-    checkConnected()
-  }, [provider])
 
   useEffect(() => {
     if (!account || !provider) {
@@ -241,7 +181,7 @@ const EternalPages: React.FC = () => {
   }, [toQuantity, toAddress, pageBalances, transferPageIndex])
 
   return (
-    <Box sx={{ width: 0.8 }}>
+    <Box sx={{ width: 0.8, marginTop: 8 }}>
       <Backdrop
         sx={{ color: '#fff', zIndex: 10000 }}
         open={transferInProgress}
@@ -253,27 +193,7 @@ const EternalPages: React.FC = () => {
           <Typography>Transferring...</Typography>
         </Box>
       </Backdrop>
-      <p>
-        Eternal Story Pages Transfer
-      </p>
       <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
-        <Grid item xs={12} key="top">
-          <Card>
-            <CardContent sx={{ paddingBottom: "16px!important", justifyContent: "space-around", alignItems: "center", display: "flex"}}>
-              <LoadingButton
-                loading={wbLoad}
-                disabled={!!account}
-                loadingPosition="start"
-                variant="contained"
-                startIcon={<SvgIcon component={MetamaskSVG} inheritViewBox />}
-                onClick={connectWallet}
-                sx={{ textTransform: "none"}}
-              >
-                {account ? short(account) : "Connect Wallet"}
-              </LoadingButton>
-            </CardContent>
-          </Card>
-        </Grid>
         {pageBalances
           .map((balance, id) => (
             <Grid item

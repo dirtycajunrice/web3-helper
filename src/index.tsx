@@ -5,11 +5,13 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { SnackbarProvider } from "notistack";
 
+
 ReactDOM.render(
   <React.StrictMode>
-      <SnackbarProvider maxSnack={3}>
-          <App />
-      </SnackbarProvider>
+    {/* @ts-ignore */}
+    <SnackbarProvider maxSnack={3}>
+      <App />
+    </SnackbarProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {Box,} from "@mui/material";
-import {Token, TokenList} from "../types";
 
 import {DataGrid, GridColDef, GridValueFormatterParams} from '@mui/x-data-grid';
 
@@ -96,7 +95,7 @@ const SynapsePending: React.FC = () => {
     }, [])
 
     return (
-        <Box sx={{ width: 0.8, height: "900px", backgroundColor: "white" }}>
+        <Box sx={{ width: 0.8, height: "900px", marginTop: 8, backgroundColor: "white" }}>
             <DataGrid
                 rows={tx || []}
                 columns={columns}

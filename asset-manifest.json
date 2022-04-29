@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/static/css/main.bf443a46.css",
-    "main.js": "/static/js/main.5bd4410a.js",
+    "main.js": "/static/js/main.3637378e.js",
     "static/js/27.b428234d.chunk.js": "/static/js/27.b428234d.chunk.js",
     "static/media/metamask-logo.svg": "/static/media/metamask-logo.f35dbdb6c59cd3d802218b5d6b1daacb.svg",
     "index.html": "/index.html"
   },
   "entrypoints": [
     "static/css/main.bf443a46.css",
-    "static/js/main.5bd4410a.js"
+    "static/js/main.3637378e.js"
   ]
 }

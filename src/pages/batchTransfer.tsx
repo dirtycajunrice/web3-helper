@@ -29,13 +29,16 @@ const MiniERC721ABI = [
   "function safeTransferFrom(address from, address to, uint256 tokenId)",
   "function setApprovalForAll(address operator, bool approved)",
   "function isApprovedForAll(address owner, address operator) view returns (bool)",
-  "function getUserHeroes(address _address) view returns (uint256[])"
+  "function getUserHeroes(address _address) view returns (uint256[])",
+  "function balanceOf(address owner) view returns (uint256 balance)",
+  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)"
 ]
 
 const HeroAddress = '0x5F753dcDf9b1AD9AabC1346614D1f4746fd6Ce5C'
+const Wizards2DAddress = '0x37f47c343bfaf27a52bc1bd468b49d8e5ef89d67'
+const Wizards3DAddress = '0xdc59f32a58ba536f639ba39c47ce9a12106b232b'
 const NFTUtilitiesAddress = '0x6F16924A4C10d525E0f03700e25259AD0d6f0591'
 
-const HeroContract = new Contract(HeroAddress, MiniERC721ABI)
 const NFTUtilitiesContract = new Contract(NFTUtilitiesAddress, NFTUtilitiesABI)
 
 
@@ -49,11 +52,12 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
 
   const [transferInProgress, setTransferInProgress] = useState<boolean>(false)
   const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false)
+  const [queryingNftIds, setQueryingNftIds] = useState<boolean>(false)
   const [nftCollectionAddress, setNftCollectionAddress] = useState<string>(HeroAddress)
   const [toAddress, setToAddress] = useState<string>("")
-  const [heroIds, setHeroIds] = useState<number[]>([])
+  const [nftIds, setNftIds] = useState<number[]>([])
   const [isApprovedForAll, setIsApprovedForAll] = useState<boolean>(false)
-  const [selectedHeroIds, setSelectedHeroIds] = useState<number[]>([])
+  const [selectedNftIds, setSelectedNftIds] = useState<number[]>([])
   const [transferValidity, setTransferValidity] = useState<boolean>(false)
 
   const Success = (message: string) => enqueueSnackbar(message, {variant: "success"})
@@ -65,11 +69,24 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
     }
     const getBalances = async () => {
       const signer = await provider.getSigner()
-      const contract = HeroContract.connect(signer)
+      const contract = new Contract(nftCollectionAddress, MiniERC721ABI, signer)
       const address = await signer.getAddress()
-      const rawHeroIds: BigNumber[] = await contract.getUserHeroes(address)
+      if (nftCollectionAddress === HeroAddress) {
+        const rawHeroIds: BigNumber[] = await contract.getUserHeroes(address)
+        setNftIds(rawHeroIds.map(h => h.toNumber()))
+      } else {
+        setQueryingNftIds(true)
+        const count = await contract.balanceOf(address)
+        let ids = []
+        for (let i = 0; i < count.toNumber(); i++) {
+          const id = await contract.tokenOfOwnerByIndex(address, i)
+          ids.push(id.toNumber())
+        }
+        setNftIds(ids)
+        setQueryingNftIds(false)
+      }
       const approved = await contract.isApprovedForAll(address, NFTUtilitiesAddress)
-      setHeroIds(rawHeroIds.map(h => h.toNumber()))
+
       setIsApprovedForAll(approved)
     }
     getBalances()
@@ -77,7 +94,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
     return () => {
       clearInterval(interval)
     }
-  }, [account, provider])
+  }, [nftCollectionAddress, account, provider])
 
   useEffect(() => {
 
@@ -93,8 +110,8 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
         return false
       }
     }
-    setTransferValidity( selectedHeroIds.length > 0 && isApprovedForAll && isValidAddress())
-  }, [selectedHeroIds, isApprovedForAll, toAddress])
+    setTransferValidity( selectedNftIds.length > 0 && isApprovedForAll && isValidAddress())
+  }, [selectedNftIds, isApprovedForAll, toAddress])
 
   const handleTransfer = async () => {
     if ( ! provider ) return
@@ -104,11 +121,10 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
     const contract = NFTUtilitiesContract.connect(signer)
     const address = await signer.getAddress()
     try {
-      console.log(address, toAddress, HeroAddress)
-      const tx = await contract.batchTransfer721(address, toAddress, HeroAddress, selectedHeroIds)
+      const tx = await contract.batchTransfer721(address, toAddress, HeroAddress, selectedNftIds)
       await tx.wait(1)
-      Success(`Sent ${selectedHeroIds.length} heroes to ${ toAddress }`)
-      setSelectedHeroIds([])
+      Success(`Sent ${selectedNftIds.length} heroes to ${ toAddress }`)
+      setSelectedNftIds([])
     } catch (e) {
       Error(`${e}`)
       console.log(e)
@@ -122,7 +138,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
     }
     setApprovalInProgress(true)
     const signer = await provider.getSigner()
-    const contract = HeroContract.connect(signer)
+    const contract = new Contract(nftCollectionAddress, MiniERC721ABI, signer)
     try {
       const tx = await contract.setApprovalForAll(NFTUtilitiesAddress, !isApprovedForAll)
       await tx.wait(1)
@@ -137,12 +153,16 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
   }
 
   const handleToAddressChange = (event: SyntheticEvent) => setToAddress((event.target as HTMLInputElement).value)
-  const handleSelectedHeroIds = (event: SelectChangeEvent<typeof heroIds>) => {
+  const handleSelectedHeroIds = (event: SelectChangeEvent<typeof nftIds>) => {
     const { target: { value } } = event;
-    setSelectedHeroIds(typeof value === 'string' ? value.split(',').map(v => Number(v)) : value)
+    setSelectedNftIds(typeof value === 'string' ? value.split(',').map(v => Number(v)) : value)
   }
 
-  const handleNFTCollection = (event: SelectChangeEvent) => setNftCollectionAddress((event.target as HTMLSelectElement).value)
+  const handleNFTCollection = (event: SelectChangeEvent) => {
+    setNftCollectionAddress((event.target as HTMLSelectElement).value)
+    setSelectedNftIds([])
+    setNftIds([])
+  }
 
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
@@ -182,27 +202,28 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                     value={nftCollectionAddress}
                     label="NFT Collection"
                     onChange={handleNFTCollection}
-                    disabled={true}
                   >
                     <MenuItem value={HeroAddress} selected>DFK Hero</MenuItem>
+                    <MenuItem value={Wizards2DAddress} selected>2D Wizards</MenuItem>
+                    <MenuItem value={Wizards3DAddress} selected>3D Wizards</MenuItem>
                   </Select>
                 </FormControl>
                 <TextField
                   type='text'
                   label="To Address"
-                  fullWidth helperText="Address of the person you are sending to"
+                  fullWidth helperText="Address of the wallet you are sending to"
                   value={toAddress}
                   onChange={handleToAddressChange}
                 />
                 <FormControl fullWidth sx={{ marginBottom: 1, marginTop: 1 }}>
-                  <InputLabel id="hero-select-label">Heroes</InputLabel>
+                  <InputLabel id="hero-select-label">NFTs</InputLabel>
                   <Select
                     labelId="hero-select-label"
                     id="demo-multiple-chip"
                     multiple
-                    value={selectedHeroIds}
+                    value={selectedNftIds}
                     onChange={handleSelectedHeroIds}
-                    input={<OutlinedInput id="select-multiple-chip" label="Heroes" />}
+                    input={<OutlinedInput id="select-multiple-chip" label="NFTs" />}
                     renderValue={(selected) => (
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {selected.sort().map((value) => (
@@ -211,7 +232,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                       </Box>
                     )}
                   >
-                    {heroIds.sort().map((id) => (
+                    {nftIds.sort().map((id) => (
                       <MenuItem
                         key={id}
                         value={id}
@@ -226,15 +247,15 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
             <CardActions sx={{  justifyContent: "space-between" }}>
               <Button
                 variant="contained"
-                disabled={selectedHeroIds.length === 0}
-                onClick={() => selectedHeroIds.length === heroIds.length ? setSelectedHeroIds([]) : setSelectedHeroIds(heroIds)}
+                disabled={selectedNftIds.length === 0}
+                onClick={() => selectedNftIds.length === nftIds.length ? setSelectedNftIds([]) : setSelectedNftIds(nftIds)}
               >
-                {heroIds.length === 0
-                  ? "No heroes"
-                  : selectedHeroIds.length === heroIds.length
-                    ? "Clear"
-                    : "Select"
-                } All Heroes
+                {nftIds.length === 0
+                  ? "No NFTs"
+                  : selectedNftIds.length === nftIds.length
+                    ? "Clear All NFTs"
+                    : "Select All NFTs"
+                }
               </Button>
               <Button
                 variant="contained"

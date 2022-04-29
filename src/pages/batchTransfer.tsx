@@ -10,7 +10,7 @@ import {
   Chip,
   FormControl,
   Grid,
-  InputLabel,
+  InputLabel, LinearProgress,
   MenuItem,
   OutlinedInput,
   Select,
@@ -67,7 +67,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
     if (!account || !provider) {
       return
     }
-    const getBalances = async () => {
+    const getBalances = async (interval?: boolean) => {
       const signer = await provider.getSigner()
       const contract = new Contract(nftCollectionAddress, MiniERC721ABI, signer)
       const address = await signer.getAddress()
@@ -75,7 +75,9 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
         const rawHeroIds: BigNumber[] = await contract.getUserHeroes(address)
         setNftIds(rawHeroIds.map(h => h.toNumber()))
       } else {
-        setQueryingNftIds(true)
+        if (!interval) {
+          setQueryingNftIds(true)
+        }
         const count = await contract.balanceOf(address)
         let ids = []
         for (let i = 0; i < count.toNumber(); i++) {
@@ -83,14 +85,16 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
           ids.push(id.toNumber())
         }
         setNftIds(ids)
-        setQueryingNftIds(false)
+        if (!interval) {
+          setQueryingNftIds(false)
+        }
       }
       const approved = await contract.isApprovedForAll(address, NFTUtilitiesAddress)
 
       setIsApprovedForAll(approved)
     }
     getBalances()
-    const interval = setInterval(getBalances, 5000)
+    const interval = setInterval(getBalances, 5000, true)
     return () => {
       clearInterval(interval)
     }
@@ -121,7 +125,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
     const contract = NFTUtilitiesContract.connect(signer)
     const address = await signer.getAddress()
     try {
-      const tx = await contract.batchTransfer721(address, toAddress, HeroAddress, selectedNftIds)
+      const tx = await contract.batchTransfer721(address, toAddress, nftCollectionAddress, selectedNftIds)
       await tx.wait(1)
       Success(`Sent ${selectedNftIds.length} heroes to ${ toAddress }`)
       setSelectedNftIds([])
@@ -242,6 +246,8 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                     ))}
                   </Select>
                 </FormControl>
+                {queryingNftIds && <LinearProgress />}
+
               </Box>
             </CardContent>
             <CardActions sx={{  justifyContent: "space-between" }}>

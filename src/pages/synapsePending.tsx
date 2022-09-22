@@ -1,3 +1,5 @@
+import { SwapWidget, SUPPORTED_LOCALES } from '@uniswap/widgets';
+import { providers } from 'ethers';
 import React, {useEffect, useState} from 'react';
 import {Box,} from "@mui/material";
 
@@ -44,7 +46,13 @@ const chainToName = (cid: number): string => {
     if (cid === 43114) return "avalanche"
     return "unknown"
 }
-const SynapsePending: React.FC = () => {
+
+interface Props {
+    provider?: providers.Web3Provider
+    account?: string
+}
+
+const SynapsePending: React.FC<Props> = ({provider, account}) => {
     const [tx, setTx] = useState<txData[]>()
 
     useEffect(() => {
@@ -103,7 +111,16 @@ const SynapsePending: React.FC = () => {
                 checkboxSelection
                 density="compact"
             />
+            <SwapWidget
+              jsonRpcEndpoint={"http://rpc.dfk.af:39393"}
+              tokenList={"https://raw.githubusercontent.com/tradescrow/token-lists/main/build/tradescrow-all.tokenlist.json"}
+              provider={provider}
+              locale={SUPPORTED_LOCALES[0]}
+              defaultInputTokenAddress="NATIVE"
+              defaultInputAmount="1"
+            />
         </Box>
+
 
     )
 }

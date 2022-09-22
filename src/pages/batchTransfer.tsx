@@ -47,7 +47,7 @@ interface BatchTransferProps {
   account?: string
 }
 
-const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
+const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [transferInProgress, setTransferInProgress] = useState<boolean>(false)
@@ -285,4 +285,4 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
 }
 
 
-export default BatchTransfer
+export default SignMessage

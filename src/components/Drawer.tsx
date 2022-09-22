@@ -64,11 +64,23 @@ const AppDrawer: FC<AppDrawerProps> = ({open, setOpen}) => {
             </ListItemIcon>
             <ListItemText primary='NFT Batch Transfer' />
           </ListItemButton>
+          <ListItemButton component={NavLink} to='/dex-aggregator'>
+            <ListItemIcon>
+              <PendingActions />
+            </ListItemIcon>
+            <ListItemText primary='Dex Aggregator' />
+          </ListItemButton>
           <ListItemButton component={NavLink} to='/synapse'>
             <ListItemIcon>
               <PendingActions />
             </ListItemIcon>
             <ListItemText primary='Synapse Pending' />
+          </ListItemButton>
+          <ListItemButton component={NavLink} to='/sign-message'>
+            <ListItemIcon>
+              <PendingActions />
+            </ListItemIcon>
+            <ListItemText primary='Sign Message' />
           </ListItemButton>
         </List>
       </Box>

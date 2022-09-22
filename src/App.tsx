@@ -2,15 +2,17 @@ import { ethers } from 'ethers';
 import React, { useState } from 'react';
 
 import {
-  HashRouter,
   Routes,
   Route,
   Navigate,
-} from "react-router-dom";
+  BrowserRouter,
+} from 'react-router-dom';
 
 import './App.css';
 import BatchTransfer from './pages/batchTransfer';
+import DexAggregator from './pages/dexAggregator';
 import Main from "./pages/main";
+import SignMessage from './pages/signMessage';
 import SynapsePending from "./pages/synapsePending";
 import EternalPages from './pages/eternalPages';
 import AppBar from './components/AppBar'
@@ -39,7 +41,7 @@ function App() {
         color: 'white',
     }}
     >
-      <HashRouter>
+      <BrowserRouter>
         <AppBar
           provider={provider}
           setProvider={setProvider}
@@ -55,9 +57,11 @@ function App() {
           <Route path="/synapse" element={<SynapsePending />} />
           <Route path="/eternal-pages" element={<EternalPages provider={provider} account={account} />} />
           <Route path="/batch-transfer" element={<BatchTransfer provider={provider} account={account} />} />
+          <Route path="/dex-aggregator" element={<DexAggregator provider={provider} account={account} />} />
+          <Route path="/sign-message" element={<SignMessage provider={provider} account={account} />} />
           <Route path="/*" element={<Navigate replace to="/" />} />
         </Routes>
-      </HashRouter>
+      </BrowserRouter>
     </Box>
   );
 }

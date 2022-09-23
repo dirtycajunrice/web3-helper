@@ -99,7 +99,7 @@ const Index = () => {
   const [imageViewer, setImageViewer] = useState({ src: '', open: false });
 
   const ids = [0, 1, 2, 3, 4, 5, 6];
-  const addresses = Array(ids.length).fill("0x2e73C8326D16ac3A94542467ACacDFf6E3E7303a");
+  const addresses = Array(ids.length).fill(address);
 
   const { isLoading, error, read, refetch  } = useContractRead({
     addressOrName: CUBadges,

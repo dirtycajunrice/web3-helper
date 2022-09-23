@@ -1,3 +1,4 @@
+import { useAccount, useSigner } from '@web3modal/react';
 import React, { SyntheticEvent, useEffect, useState } from 'react';
 
 import {
@@ -22,7 +23,7 @@ import { DoNotDisturbOff, FactCheck, TransferWithinAStation } from '@mui/icons-m
 
 import NFTUtilitiesABI from '../assets/ABIs/NFTUtilities.json';
 import RotatingBox from '../components/RotatingBox';
-import { BigNumber, Contract, providers, utils } from 'ethers';
+import { BigNumber, Contract, utils } from 'ethers';
 import {useSnackbar} from "notistack";
 
 const MiniERC721ABI = [
@@ -42,14 +43,10 @@ const NFTUtilitiesAddress = '0x6F16924A4C10d525E0f03700e25259AD0d6f0591'
 const NFTUtilitiesContract = new Contract(NFTUtilitiesAddress, NFTUtilitiesABI)
 
 
-interface BatchTransferProps {
-  provider?: providers.Web3Provider
-  account?: string
-}
-
-const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
+const SignMessage = () => {
   const { enqueueSnackbar } = useSnackbar();
-
+  const { address } = useAccount();
+  const { signer } = useSigner();
   const [transferInProgress, setTransferInProgress] = useState<boolean>(false)
   const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false)
   const [queryingNftIds, setQueryingNftIds] = useState<boolean>(false)
@@ -64,11 +61,10 @@ const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"})
 
   useEffect(() => {
-    if (!account || !provider) {
+    if (!address || !signer) {
       return
     }
     const getBalances = async (interval?: boolean) => {
-      const signer = await provider.getSigner()
       const contract = new Contract(nftCollectionAddress, MiniERC721ABI, signer)
       const address = await signer.getAddress()
       if (nftCollectionAddress === HeroAddress) {
@@ -79,7 +75,7 @@ const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
           setQueryingNftIds(true)
         }
         const count = await contract.balanceOf(address)
-        let ids = []
+        const ids: number[] = [];
         for (let i = 0; i < count.toNumber(); i++) {
           const id = await contract.tokenOfOwnerByIndex(address, i)
           ids.push(id.toNumber())
@@ -98,10 +94,9 @@ const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
     return () => {
       clearInterval(interval)
     }
-  }, [nftCollectionAddress, account, provider])
+  }, [nftCollectionAddress, address, signer])
 
   useEffect(() => {
-
     const isValidAddress = (): boolean => {
       console.log(toAddress)
       if (!toAddress) {
@@ -118,12 +113,11 @@ const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
   }, [selectedNftIds, isApprovedForAll, toAddress])
 
   const handleTransfer = async () => {
-    if ( ! provider ) return
-    if ( ! account ) return
+    if (!address || !signer) {
+      return
+    }
     setTransferInProgress(true)
-    const signer = await provider.getSigner()
     const contract = NFTUtilitiesContract.connect(signer)
-    const address = await signer.getAddress()
     try {
       const tx = await contract.batchTransfer721(address, toAddress, nftCollectionAddress, selectedNftIds)
       await tx.wait(1)
@@ -137,11 +131,10 @@ const SignMessage: React.FC<BatchTransferProps> = ({provider, account}) => {
   }
 
   const handleApproveForAll = async () => {
-    if (!account || !provider) {
+    if (!address || !signer) {
       return
     }
     setApprovalInProgress(true)
-    const signer = await provider.getSigner()
     const contract = new Contract(nftCollectionAddress, MiniERC721ABI, signer)
     try {
       const tx = await contract.setApprovalForAll(NFTUtilitiesAddress, !isApprovedForAll)

@@ -1,3 +1,4 @@
+import { useAccount, useSigner, useSignMessage } from '@web3modal/react';
 import React, { useState, ChangeEvent, Fragment } from 'react';
 
 import {
@@ -14,21 +15,17 @@ import {
 } from '@mui/material';
 import { ContentCopy, FactCheck } from '@mui/icons-material';
 import RotatingBox from '../components/RotatingBox';
-import { providers, utils } from 'ethers';
+import { utils } from 'ethers';
 import {useSnackbar} from "notistack";
 import CheckMarkGif from '../assets/images/checkmark.gif';
 
-interface BatchTransferProps {
-  provider?: providers.Web3Provider
-  account?: string
-}
-
-const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
+const BatchTransfer= () => {
   const { enqueueSnackbar } = useSnackbar();
+  const { address } = useAccount();
+  const { error, signature, sign } = useSignMessage();
 
   const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false);
   const [verified, setVerified] = useState<boolean>();
-  const [signed, setSigned] = useState<string>();
   const [hovered, setHovered] = useState<boolean>(false);
   const [verifyMessageText, setVerifyMessageText] = useState<string>("");
   const [verifyMessageAddress, setVerifyMessageAddress] = useState<string>("");
@@ -44,17 +41,18 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
   `);
 
   const signMessage = async () => {
-    if (!account || !provider) {
+    if (!address) {
       return
     }
+
     setApprovalInProgress(true)
     try {
-      const signer = await provider.getSigner();
-      const signedMessage = await signer.signMessage(messageText(account));
-      setSigned(signedMessage);
-      Success('Message signed!');
+      await sign(messageText(address));
+      if (!error) {
+        Success('Message signed!');
+      }
     } catch (e: any) {
-      Error(e.message);
+      Error(error as unknown as string);
     }
 
     setApprovalInProgress(false)
@@ -82,7 +80,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
   }
 
   const signReset = () => {
-    setSigned(undefined);
+    sign('');
     Success('Sign reset!');
   }
 
@@ -94,10 +92,10 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
   }
 
   const copySigned = () => {
-    if (!signed) {
+    if (!signature) {
       return;
     }
-    navigator.clipboard.writeText(signed).then(() => Success("Copied to clipboard"))
+    navigator.clipboard.writeText(signature).then(() => Success("Copied to clipboard"))
   }
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
@@ -116,26 +114,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
         <Grid item xs={6} sx={{ marginX: 2 }}>
           <Card>
             <CardHeader title="Sign Message" />
-            {!signed && (
-              <Fragment>
-                <CardContent>
-                  <TextField
-                    label="Message"
-                    multiline
-                    minRows={5}
-                    maxRows={10}
-                    value={messageText(account || '')}
-                    disabled
-                    variant="filled"
-                    sx={{ width: 0.95, pointerEvents: 'none' }}
-                  />
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'space-around'}}>
-                  <Button variant="contained" disabled={!account} onClick={signMessage}>Sign</Button>
-                </CardActions>
-              </Fragment>
-            )}
-            {signed && (
+            {signature ? (
               <Fragment>
                 <CardContent
                   onMouseOver={() => setHovered(true)}
@@ -147,7 +126,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                     multiline
                     minRows={2}
                     maxRows={5}
-                    value={signed}
+                    value={signature}
                     disabled
                     variant="filled"
                     sx={{ width: 0.95, pointerEvents: 'none' }}
@@ -168,9 +147,27 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                   </Backdrop>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-around'}}>
-                  <Button variant="contained" disabled={!account} onClick={signReset}>
+                  <Button variant="contained" disabled={!address} onClick={signReset}>
                     Reset
                   </Button>
+                </CardActions>
+              </Fragment>
+            ) : (
+              <Fragment>
+                <CardContent>
+                  <TextField
+                    label="Message"
+                    multiline
+                    minRows={5}
+                    maxRows={10}
+                    value={messageText(address || 'unknown')}
+                    disabled
+                    variant="filled"
+                    sx={{ width: 0.95, pointerEvents: 'none' }}
+                  />
+                </CardContent>
+                <CardActions sx={{ justifyContent: 'space-around'}}>
+                  <Button variant="contained" disabled={!address} onClick={signMessage}>Sign</Button>
                 </CardActions>
               </Fragment>
             )}
@@ -197,7 +194,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                 <CardActions sx={{ justifyContent: 'space-around'}}>
                   <Button
                     variant="contained"
-                    disabled={!account}
+                    disabled={!address}
                     onClick={verifiedReset}
                   >
                     Clear
@@ -228,7 +225,7 @@ const BatchTransfer: React.FC<BatchTransferProps> = ({provider, account}) => {
                 <CardActions sx={{ justifyContent: 'space-around'}}>
                   <Button
                     variant="contained"
-                    disabled={!account || !verifyMessageText}
+                    disabled={!address || !verifyMessageText}
                     onClick={verifyMessage}
                   >
                     Verify

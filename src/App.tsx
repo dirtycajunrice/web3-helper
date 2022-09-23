@@ -1,20 +1,10 @@
-import { ethers } from 'ethers';
-import React, { useState } from 'react';
-
-import {
-  Routes,
-  Route,
-  Navigate,
-  BrowserRouter,
-} from 'react-router-dom';
-
+import React from 'react';
+import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import './App.css';
 import BatchTransfer from './pages/batchTransfer';
-import DexAggregator from './pages/dexAggregator';
-import Main from "./pages/main";
+import TokenImport from "@pages/TokenImport";
 import SignMessage from './pages/signMessage';
-import SynapsePending from "./pages/synapsePending";
-import EternalPages from './pages/eternalPages';
+import ERC1155Transfer from '@pages/ERC1155Transfer';
 import AppBar from './components/AppBar'
 import AppDrawer from './components/Drawer';
 
@@ -22,11 +12,6 @@ import { Box } from '@mui/material';
 
 
 function App() {
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
-  const [account, setAccount] = useState<string>("")
-  const [currentChain, setCurrentChain] = useState<number>()
-  const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
-
   return (
     <Box
       id="App"
@@ -42,23 +27,13 @@ function App() {
     }}
     >
       <BrowserRouter>
-        <AppBar
-          provider={provider}
-          setProvider={setProvider}
-          account={account}
-          setAccount={setAccount}
-          currentChain={currentChain}
-          setCurrentChain={setCurrentChain}
-          setDrawerOpen={setDrawerOpen}
-        />
-        <AppDrawer open={drawerOpen} setOpen={setDrawerOpen} />
+        <AppBar />
+        <AppDrawer />
         <Routes>
-          <Route path="/" element={<Main provider={provider} account={account} currentChain={currentChain} />} />
-          <Route path="/synapse" element={<SynapsePending />} />
-          <Route path="/eternal-pages" element={<EternalPages provider={provider} account={account} />} />
-          <Route path="/batch-transfer" element={<BatchTransfer provider={provider} account={account} />} />
-          <Route path="/dex-aggregator" element={<DexAggregator provider={provider} account={account} />} />
-          <Route path="/sign-message" element={<SignMessage provider={provider} account={account} />} />
+          <Route path="/" element={<TokenImport />} />
+          <Route path="/erc1155-transfer" element={<ERC1155Transfer />} />
+          <Route path="/batch-transfer" element={<BatchTransfer />} />
+          <Route path="/sign-message" element={<SignMessage />} />
           <Route path="/*" element={<Navigate replace to="/" />} />
         </Routes>
       </BrowserRouter>

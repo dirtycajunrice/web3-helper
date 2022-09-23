@@ -1,5 +1,5 @@
 import { ListItemButton } from '@mui/material';
-import React, { FC, MouseEvent, KeyboardEvent } from 'react';
+import React, { MouseEvent, KeyboardEvent } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 
@@ -11,16 +11,16 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
 import { NavLink } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '@state/hooks';
+import { selectUiComponentNavDrawerActive } from '@state/ui/hooks';
+import { setUiComponent } from '@state/ui/reducer';
+import { Component } from '@state/ui/types';
 
+const AppDrawer = () => {
+  const open = useAppSelector(selectUiComponentNavDrawerActive);
+  const dispatch = useAppDispatch();
 
-interface AppDrawerProps {
-  open: boolean
-  setOpen: (open: boolean) => void
-}
-
-const AppDrawer: FC<AppDrawerProps> = ({open, setOpen}) => {
-
-  const toggleDrawer = (o: boolean) =>
+  const close = () =>
       (event: KeyboardEvent | MouseEvent) => {
         if (
           event.type === 'keydown' &&
@@ -30,20 +30,20 @@ const AppDrawer: FC<AppDrawerProps> = ({open, setOpen}) => {
           return;
         }
 
-        setOpen(o)
+        dispatch(setUiComponent(Component.None));
       };
 
   return (
     <Drawer
       anchor="left"
       open={open}
-      onClose={toggleDrawer(false)}
+      onClose={() => dispatch(setUiComponent(Component.None))}
     >
       <Box
         sx={{ width: 250 }}
         role="presentation"
-        onClick={toggleDrawer(false)}
-        onKeyDown={toggleDrawer(false)}
+        onClick={close}
+        onKeyDown={close}
       >
         <List>
           <ListItemButton component={NavLink} to='/'>
@@ -52,29 +52,17 @@ const AppDrawer: FC<AppDrawerProps> = ({open, setOpen}) => {
             </ListItemIcon>
             <ListItemText primary='Token Import' />
           </ListItemButton>
-          <ListItemButton component={NavLink} to='/eternal-pages'>
+          <ListItemButton component={NavLink} to='/erc1155-transfer'>
             <ListItemIcon>
               <AutoStories />
             </ListItemIcon>
-            <ListItemText primary='Pages Transfer' />
+            <ListItemText primary='ERC1155 Transfer' />
           </ListItemButton>
           <ListItemButton component={NavLink} to='/batch-transfer'>
             <ListItemIcon>
               <TransferWithinAStation />
             </ListItemIcon>
             <ListItemText primary='NFT Batch Transfer' />
-          </ListItemButton>
-          <ListItemButton component={NavLink} to='/dex-aggregator'>
-            <ListItemIcon>
-              <PendingActions />
-            </ListItemIcon>
-            <ListItemText primary='Dex Aggregator' />
-          </ListItemButton>
-          <ListItemButton component={NavLink} to='/synapse'>
-            <ListItemIcon>
-              <PendingActions />
-            </ListItemIcon>
-            <ListItemText primary='Synapse Pending' />
           </ListItemButton>
           <ListItemButton component={NavLink} to='/sign-message'>
             <ListItemIcon>

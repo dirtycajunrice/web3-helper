@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+        "paths": {
+            "@assets/*": [
+                "assets/*"
+            ],
+            "@abis/*": [
+                "abis/*"
+            ],
+            "@components/*": [
+                "components/*"
+            ],
+            "@constants/*": [
+                "constants/*"
+            ],
+            "@pages/*": [
+                "pages/*"
+            ],
+            "@state/*": [
+                "state/*"
+            ],
+            "@utils/*": [
+                "utils/*"
+            ],
+            "@theme/*": [
+                "theme/*"
+            ],
+            "@services/*": [
+                "services/*"
+            ]
+        }
+    }
+}

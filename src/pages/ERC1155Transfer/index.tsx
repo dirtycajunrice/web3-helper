@@ -1,3 +1,5 @@
+import ImageViewer from '@pages/ERC1155Transfer/imageViewer';
+import { useAccount, useContractRead } from '@web3modal/react';
 import React, { SyntheticEvent, useEffect, useState } from 'react';
 
 import {
@@ -19,22 +21,18 @@ import {
   Typography,
 } from '@mui/material';
 
-import { BigNumber, Contract, providers, utils } from 'ethers';
+import { BigNumber, Contract, utils } from 'ethers';
 import {useSnackbar} from "notistack";
 
-import RotatingBox from '../components/RotatingBox';
+import RotatingBox from '@components/RotatingBox';
 
-const MiniERC1155ABI = [
-  "function balanceOfBatch(address[] memory accounts, uint256[] memory ids) public view returns (uint256[] memory)",
-  "function safeTransferFrom(address from,address to, uint256 id, uint256 amount, bytes memory data) "
-]
+import ERC1155Artifact from '../../artifacts/CosmicBadges.json';
 
-const EternalStoryPagesAddress = '0x909EF175d58d0e17d3Ceb005EeCF24C1E5C6F390'
 
-const EspContract = new Contract(EternalStoryPagesAddress, MiniERC1155ABI)
+const CUBadges = '0x03A37A09be3E90bE403e263238c1aCb14a341DEf';
 
 const PageUrl = (page: number) =>
-  `https://beta.defikingdoms.com/static/media/eternal-story-page-${page}.${EternalStoryPages[page].img}.png`
+  `https://images.cosmicuniverse.io/cosmic-badges/${page}`
 
 const EternalStoryPages: {[index: number]: {[index: string]: string | number | BigNumber}} = {
   1: {
@@ -89,44 +87,43 @@ const EternalStoryPages: {[index: number]: {[index: string]: string | number | B
   //},
 }
 
-interface EternalPagesProps {
-  provider?: providers.Web3Provider
-  account?: string
-}
-
-const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
+const Index = () => {
   const { enqueueSnackbar } = useSnackbar();
-
-  const [pageBalances, setPageBalances] = useState(Array(9).fill(BigNumber.from(0)))
+  const { address, chainId, chainSupported, connected, connector } = useAccount();
   const [transferDialogOpen, setTransferDialogOpen] = useState<boolean>(false);
   const [transferPageIndex, setTransferPageIndex] = useState<number>(0)
   const [DialogValidity, setDialogValidity] = useState<boolean>(false);
   const [transferInProgress, setTransferInProgress] = useState<boolean>(false)
   const [toAddress, setToAddress] = useState<string>("")
   const [toQuantity, setToQuantity] = useState<number>(0)
+  const [imageViewer, setImageViewer] = useState({ src: '', open: false });
 
+  const ids = [0, 1, 2, 3, 4, 5, 6];
+  const addresses = Array(ids.length).fill("0x2e73C8326D16ac3A94542467ACacDFf6E3E7303a");
+
+  const { isLoading, error, read, refetch  } = useContractRead({
+    addressOrName: CUBadges,
+    functionName: 'balanceOfBatch',
+    contractInterface: ERC1155Artifact.abi,
+    args: [addresses, ids],
+    chainId: `eip155:43114`,
+    overrides: undefined
+  })
   const Success = (message: string) => enqueueSnackbar(message, {variant: "success"})
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"})
 
   useEffect(() => {
-    if (!account || !provider) {
-      return
+    if (error) {
+      console.log("Error:", error);
+      return;
     }
-    const getBalances = async () => {
-      const signer = await provider.getSigner()
-      const contract = EspContract.connect(signer)
-      const address = await signer.getAddress()
-      const TenAddress = Array(Object.keys(EternalStoryPages).length).fill(address)
-      const TokenIDs = Array.from(TenAddress.keys())
-      const rawBalances = await contract.balanceOfBatch(TenAddress, TokenIDs)
-      setPageBalances(rawBalances)
+    if (isLoading) {
+      console.log("isLoading");
+      return;
     }
-    getBalances()
-    const interval = setInterval(getBalances, 5000)
-    return () => {
-      clearInterval(interval)
-    }
-  }, [account, provider])
+
+    console.log(read)
+  }, [isLoading, error, read, address, chainId, connected])
 
   const setupTransferDialog = (pageIndex: number) => {
     setTransferPageIndex(pageIndex)
@@ -134,24 +131,23 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
   }
 
   const transfer = async () => {
-    if ( ! provider ) return
-    if ( ! account ) return
-    setTransferInProgress(true)
-    const signer = await provider.getSigner()
-    const contract = EspContract.connect(signer)
-    const address = await signer.getAddress()
-    try {
-      const tx = await contract.safeTransferFrom(address, toAddress, transferPageIndex, toQuantity, [])
-      await tx.wait(1)
-      Success(`Sent page ${ transferPageIndex + 1 } (${ toQuantity }) to ${ toAddress }`)
-      setTransferDialogOpen(false)
-      setToQuantity(0)
-      setToAddress("")
-    } catch (e) {
-      Error(`${e}`)
-      console.log(e)
+    if (!address) {
+      return
     }
-    setTransferInProgress(false)
+    setTransferInProgress(true)
+    //const contract = EspContract.connect(signer)
+    //try {
+    //  const tx = await contract.safeTransferFrom(address, toAddress, transferPageIndex, toQuantity, [])
+    //  await tx.wait(1)
+    //  Success(`Sent page ${ transferPageIndex + 1 } (${ toQuantity }) to ${ toAddress }`)
+    //  setTransferDialogOpen(false)
+    //  setToQuantity(0)
+    //  setToAddress("")
+    //} catch (e) {
+    //  Error(`${e}`)
+    //  console.log(e)
+    //}
+    //setTransferInProgress(false)
   }
 
   const handleAddressChange = (event: SyntheticEvent) => setToAddress((event.target as HTMLInputElement).value)
@@ -161,8 +157,9 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
 
   useEffect(() => {
     const transferInBounds = (): boolean =>
-      pageBalances[transferPageIndex].gt(0)
-      && pageBalances[transferPageIndex].gte(toQuantity)
+      read
+      && read[transferPageIndex].gt(0)
+      && read[transferPageIndex].gte(toQuantity)
       && (toQuantity > 0)
 
     const isValidAddress = (): boolean => {
@@ -178,10 +175,15 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
       }
     }
     setDialogValidity(transferInBounds() && isValidAddress())
-  }, [toQuantity, toAddress, pageBalances, transferPageIndex])
+  }, [toQuantity, toAddress, read, transferPageIndex])
 
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
+      <ImageViewer
+        close={() => setImageViewer({ ...imageViewer, open: false })}
+        open={imageViewer.open}
+        src={imageViewer.src}
+      />
       <Backdrop
         sx={{ color: '#fff', zIndex: 10000 }}
         open={transferInProgress}
@@ -194,7 +196,7 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
         </Box>
       </Backdrop>
       <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
-        {pageBalances
+        {read && read
           .map((balance, id) => (
             <Grid item
                   xs={12}
@@ -204,20 +206,30 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
                   key={`${id}-${balance.toNumber()}`}
                   sx={{ display: "flex", flexDirection: "column", height: 1 }}
             >
-              <Card sx={{ height: "220.5px", flexDirection: "column", display: "flex" }}>
+              <Card
+                onClick={() => setImageViewer({ src: PageUrl(id), open: true })}
+                sx={{
+                  height: "220.5px",
+                  flexDirection: "column",
+                  display: "flex",
+                  maxWidth: 310,
+                  transition: "transform 0.15s ease-in-out",
+                  "&:hover": { transform: "scale3d(1.05, 1.05, 1)" },
+              }}
+              >
 
                 <CardContent sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
-                  <CardMedia component="img" sx={{ maxWidth: "64px" }} image={PageUrl(id+1)} alt={`${id+1}`} />
+                  <CardMedia component="img" sx={{ maxWidth: "64px" }} image={PageUrl(id)} alt={`${id+1}`} />
                 </CardContent>
                 <CardHeader
-                  title={`Balance: ${balance.toNumber()}`}
+                  title={`Owned: ${balance.toNumber()}`}
                   sx={{ paddingBottom: 0 }}
                 />
                 <Box sx={{flexGrow: 1 }} />
                 <CardActions sx={{  justifyContent: "center" }}>
                   <Button
                     variant="contained"
-                    disabled={!account || balance.eq(0)}
+                    disabled={!address || balance.eq(0)}
                     onClick={() => setupTransferDialog(id)}
                   >
                     Transfer
@@ -251,12 +263,12 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
             />
             <TextField
               sx={{ marginTop: 1}}
-              inputProps={{ min: 1, max: pageBalances[transferPageIndex].toNumber(), step: 1}}
+              inputProps={{ min: 1, max: read?.[transferPageIndex].toNumber(), step: 1}}
               type='number'
               label="Quantity"
               value={toQuantity}
               onChange={handleQuantityChange}
-              fullWidth helperText={`Number of pages to send. Min: 1 | Max: ${pageBalances[transferPageIndex].toNumber()}`}
+              fullWidth helperText={`Number of pages to send. Min: 1 | Max: ${read?.[transferPageIndex]?.toNumber()}`}
             />
           </Box>
 
@@ -276,4 +288,4 @@ const EternalPages: React.FC<EternalPagesProps> = ({provider, account}) => {
 }
 
 
-export default EternalPages
+export default Index

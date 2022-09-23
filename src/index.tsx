@@ -4,14 +4,21 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { SnackbarProvider } from "notistack";
-
+import { Web3ModalProvider } from '@web3modal/react';
+import { web3ModalConfig } from './services/web3modal';
+import { Provider } from 'react-redux';
+import store from './state/store';
 
 ReactDOM.render(
   <React.StrictMode>
     {/* @ts-ignore */}
-    <SnackbarProvider maxSnack={3}>
-      <App />
-    </SnackbarProvider>
+    <Web3ModalProvider config={web3ModalConfig}>
+      <Provider store={store}>
+        <SnackbarProvider maxSnack={3}>
+          <App />
+        </SnackbarProvider>
+      </Provider>
+    </Web3ModalProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

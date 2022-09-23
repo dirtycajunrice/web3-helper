@@ -48,18 +48,18 @@ const TopAppBar = () => {
   return (
     <Box sx={{ width: 0.8, marginTop: 2 }}>
       <AppBar color='default' sx={{ colorDefault: 'white' }}>
-        <Toolbar >
+        <Toolbar sx={{ position: 'relative' }}>
           <IconButton
             size="large"
             edge="start"
             color="inherit"
             aria-label="menu"
-            sx={{ mr: 2 }}
+            sx={{ position: 'absolute', left: '16px' }}
             onClick={() => dispatch(setUiComponent(Component.NavDrawer))}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" sx={{ position: 'absolute', left: 50, right: 50 }}>
             {PageName()}
           </Typography>
           <LoadingButton
@@ -68,7 +68,7 @@ const TopAppBar = () => {
             variant="contained"
             startIcon={<SvgIcon component={MetamaskSVG} inheritViewBox />}
             onClick={open}
-            sx={{ textTransform: "none"}}
+            sx={{ textTransform: "none", right: '16px', position: 'absolute' }}
           >
             {address ? short(address) : "Connect Wallet"}
           </LoadingButton>

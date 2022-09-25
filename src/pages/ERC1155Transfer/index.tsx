@@ -1,5 +1,4 @@
 import ImageViewer from '@pages/ERC1155Transfer/imageViewer';
-import { useAccount, useContractRead } from '@web3modal/react';
 import React, { SyntheticEvent, useEffect, useState } from 'react';
 
 import {
@@ -27,6 +26,7 @@ import {useSnackbar} from "notistack";
 import RotatingBox from '@components/RotatingBox';
 
 import ERC1155Artifact from '../../artifacts/CosmicBadges.json';
+import {useAccount, useContractRead, useContractWrite, usePrepareContractWrite} from "wagmi";
 
 
 const CUBadges = '0x03A37A09be3E90bE403e263238c1aCb14a341DEf';
@@ -89,7 +89,7 @@ const EternalStoryPages: {[index: number]: {[index: string]: string | number | B
 
 const Index = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { address, chainId, chainSupported, connected, connector } = useAccount();
+  const { address } = useAccount();
   const [transferDialogOpen, setTransferDialogOpen] = useState<boolean>(false);
   const [transferPageIndex, setTransferPageIndex] = useState<number>(0)
   const [DialogValidity, setDialogValidity] = useState<boolean>(false);
@@ -101,29 +101,37 @@ const Index = () => {
   const ids = [0, 1, 2, 3, 4, 5, 6];
   const addresses = Array(ids.length).fill(address);
 
-  const { isLoading, error, read, refetch  } = useContractRead({
+  const contractRead = useContractRead({
     addressOrName: CUBadges,
     functionName: 'balanceOfBatch',
     contractInterface: ERC1155Artifact.abi,
     args: [addresses, ids],
-    chainId: `eip155:43114`,
-    overrides: undefined
+    chainId: 43114
   })
+
+  const { config } = usePrepareContractWrite({
+    addressOrName: CUBadges,
+    contractInterface: ERC1155Artifact.abi,
+    functionName: 'safeTransferFrom',
+    args: [address, toAddress, transferPageIndex, toQuantity, []]
+  })
+  const contractWrite = useContractWrite(config)
+
   const Success = (message: string) => enqueueSnackbar(message, {variant: "success"})
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"})
 
   useEffect(() => {
-    if (error) {
-      console.log("Error:", error);
+    if (contractRead.error) {
+      console.log("Error:", contractRead.error);
       return;
     }
-    if (isLoading) {
+    if (contractRead.isLoading) {
       console.log("isLoading");
       return;
     }
 
-    console.log(read)
-  }, [isLoading, error, read, address, chainId, connected])
+    console.log(contractRead.data)
+  }, [contractRead.isLoading, contractRead.error, contractRead.data, address])
 
   const setupTransferDialog = (pageIndex: number) => {
     setTransferPageIndex(pageIndex)
@@ -135,19 +143,17 @@ const Index = () => {
       return
     }
     setTransferInProgress(true)
-    //const contract = EspContract.connect(signer)
-    //try {
-    //  const tx = await contract.safeTransferFrom(address, toAddress, transferPageIndex, toQuantity, [])
-    //  await tx.wait(1)
-    //  Success(`Sent page ${ transferPageIndex + 1 } (${ toQuantity }) to ${ toAddress }`)
-    //  setTransferDialogOpen(false)
-    //  setToQuantity(0)
-    //  setToAddress("")
-    //} catch (e) {
-    //  Error(`${e}`)
-    //  console.log(e)
-    //}
-    //setTransferInProgress(false)
+    contractWrite.write?.();
+    if (contractWrite.isSuccess) {
+      Success(`Sent page ${ transferPageIndex + 1 } (${ toQuantity }) to ${ toAddress }`)
+      setTransferDialogOpen(false)
+      setToQuantity(0)
+      setToAddress("")
+    } else if (contractWrite.error) {
+      Error(`${contractWrite.error.message}`)
+      console.log(contractWrite.error)
+    }
+    setTransferInProgress(false)
   }
 
   const handleAddressChange = (event: SyntheticEvent) => setToAddress((event.target as HTMLInputElement).value)
@@ -157,9 +163,9 @@ const Index = () => {
 
   useEffect(() => {
     const transferInBounds = (): boolean =>
-      read
-      && read[transferPageIndex].gt(0)
-      && read[transferPageIndex].gte(toQuantity)
+      contractRead.data
+      && contractRead.data[transferPageIndex].gt(0)
+      && contractRead.data[transferPageIndex].gte(toQuantity)
       && (toQuantity > 0)
 
     const isValidAddress = (): boolean => {
@@ -175,7 +181,7 @@ const Index = () => {
       }
     }
     setDialogValidity(transferInBounds() && isValidAddress())
-  }, [toQuantity, toAddress, read, transferPageIndex])
+  }, [toQuantity, toAddress, contractRead.data, transferPageIndex])
 
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
@@ -196,7 +202,7 @@ const Index = () => {
         </Box>
       </Backdrop>
       <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
-        {read && read
+        {contractRead.data && contractRead.data
           .map((balance, id) => (
             <Grid item
                   xs={12}
@@ -263,12 +269,12 @@ const Index = () => {
             />
             <TextField
               sx={{ marginTop: 1}}
-              inputProps={{ min: 1, max: read?.[transferPageIndex].toNumber(), step: 1}}
+              inputProps={{ min: 1, max: contractRead.data?.[transferPageIndex].toNumber(), step: 1}}
               type='number'
               label="Quantity"
               value={toQuantity}
               onChange={handleQuantityChange}
-              fullWidth helperText={`Number of pages to send. Min: 1 | Max: ${read?.[transferPageIndex]?.toNumber()}`}
+              fullWidth helperText={`Number of pages to send. Min: 1 | Max: ${contractRead.data?.[transferPageIndex]?.toNumber()}`}
             />
           </Box>
 

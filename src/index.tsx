@@ -4,26 +4,25 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { SnackbarProvider } from "notistack";
-import { Web3ModalProvider } from '@web3modal/react';
-import { web3ModalConfig } from './services/web3modal';
+import { WagmiConfig } from 'wagmi'
 import { Provider } from 'react-redux';
+import { ConnectKitProvider } from "connectkit";
 import store from './state/store';
+import client from "@services/wagmi";
 
 ReactDOM.render(
   <React.StrictMode>
-    {/* @ts-ignore */}
-    <Web3ModalProvider config={web3ModalConfig}>
-      <Provider store={store}>
-        <SnackbarProvider maxSnack={3}>
-          <App />
-        </SnackbarProvider>
-      </Provider>
-    </Web3ModalProvider>
+    <Provider store={store}>
+      <WagmiConfig client={client}>
+        <ConnectKitProvider mode="dark" options={{ walletConnectName: "WalletConnect" }}>
+          <SnackbarProvider maxSnack={3}>
+            <App />
+          </SnackbarProvider>
+        </ConnectKitProvider>
+      </WagmiConfig>
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

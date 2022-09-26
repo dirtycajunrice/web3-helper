@@ -1,5 +1,4 @@
 import { chainIdToNumber } from '@utils/web3modal';
-import { useAccount } from '@web3modal/react';
 import React, { useState } from 'react';
 import { useAsync } from "react-async"
 import {
@@ -18,9 +17,10 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 
-import {Token, TokenList} from "../types";
-import {ENABLED_CHAINS, getAddChainParameters} from '@components/chains';
-import {useSnackbar} from "notistack";
+import { Token, TokenList } from "../types";
+import { getAddChainParameters } from '@components/chains';
+import { useSnackbar } from "notistack";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 
 const TokenListURL = "https://raw.githubusercontent.com/tradescrow/token-lists/main/build/tradescrow-all.tokenlist.json"
 
@@ -32,17 +32,15 @@ const loadTokenList = async (): Promise<TokenList> => {
 
 const TokenImport = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { address, chainId } = useAccount();
-
+  const { address } = useAccount();
+  const { chain, chains } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
   const { data, error, isPending } = useAsync(loadTokenList);
   const [filter, setFilter] = useState('all')
 
   const handleFilter = (event: SelectChangeEvent) => {
     setFilter(event.target.value);
   }
-  const filteredChain = filter !== 'all' ? ENABLED_CHAINS.filter(([id,]) => id === filter)[0][1] : {name: ""}
-  const filteredChainId = filter !== 'all' ? ENABLED_CHAINS.filter(([id,]) => id === filter)[0][0] : null
-
 
   const Success = (message: string) => enqueueSnackbar(message, {variant: "success"})
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"})
@@ -69,17 +67,6 @@ const TokenImport = () => {
     else Error("User declined the request")
   }
 
-  const switchNetwork = async (chainId: number) => {
-    if (!address) {
-      return
-    }
-    let ethereum = (window as any).ethereum
-    await ethereum.request({
-      method: "wallet_addEthereumChain",
-      params: [getAddChainParameters(chainId)]
-    })
-  }
-
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
       <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
@@ -96,18 +83,18 @@ const TokenImport = () => {
                   onChange={handleFilter}
                 >
                   <MenuItem value="all">All</MenuItem>
-                  {ENABLED_CHAINS.map(([id, chain]) => (
-                    <MenuItem value={id} key={id}>{chain.name}</MenuItem>
+                  {chains.map(c => (
+                    <MenuItem value={c.id} key={c.id}>{c.name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
               {filter !== "all" && (
                 <Button
                   variant="contained"
-                  disabled={chainId?.toString() === filteredChainId}
-                  onClick={() => switchNetwork(Number(filteredChainId))}
+                  disabled={chain?.id?.toString() === filter}
+                  onClick={() => switchNetwork ? switchNetwork(Number(filter)) : null}
                 >
-                  Add {filteredChain.name}
+                  Add {chains.find(c => c.id.toString() === filter)?.name}
                 </Button>
               )}
 
@@ -121,7 +108,9 @@ const TokenImport = () => {
           `Something went wrong: ${error.message}`
         )}
         {data && (
-          data.tokens.filter(token => token.chainId.toString() === filter || filter === "all").map(token => (
+          data.tokens
+            .filter(token => token.chainId.toString() === filter || filter === "all")
+            .map(token => (
             <Grid item
                   xs={12}
                   sm={6}
@@ -140,9 +129,9 @@ const TokenImport = () => {
                   <Button
                     variant="contained"
                     disabled={!address}
-                    onClick={() => token.chainId === chainIdToNumber(chainId) ? addToken(token) : switchNetwork(token.chainId)}
+                    onClick={() => token.chainId === chain?.id ? addToken(token) : switchNetwork?.(token.chainId)}
                   >
-                    {token.chainId === chainIdToNumber(chainId) ? "Add" : "Switch Network"}
+                    {token.chainId === chain?.id ? "Add" : "Switch Network"}
                   </Button>
                 </CardActions>
               </Card>

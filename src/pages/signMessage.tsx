@@ -1,5 +1,4 @@
-import { useAccount, useSigner, useSignMessage } from '@web3modal/react';
-import React, { useState, ChangeEvent, Fragment } from 'react';
+import React, { useState, ChangeEvent, Fragment, useEffect, useMemo } from 'react';
 
 import {
   Backdrop,
@@ -13,16 +12,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { ContentCopy, FactCheck } from '@mui/icons-material';
+import {ContentCopy, Edit, FactCheck} from '@mui/icons-material';
 import RotatingBox from '../components/RotatingBox';
 import { utils } from 'ethers';
 import {useSnackbar} from "notistack";
 import CheckMarkGif from '../assets/images/checkmark.gif';
+import { useAccount, useSignMessage } from "wagmi";
+import {LoadingButton} from "@mui/lab";
 
 const BatchTransfer= () => {
   const { enqueueSnackbar } = useSnackbar();
   const { address } = useAccount();
-  const { error, signature, sign } = useSignMessage();
 
   const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false);
   const [verified, setVerified] = useState<boolean>();
@@ -33,33 +33,21 @@ const BatchTransfer= () => {
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"});
 
   const hash = `78f8e120ba82513afca811d65d898d08`;
-  const messageText = (wallet: string) => ( `
+
+  const message = useMemo(() => (`
     I am signing this message to show proof of ownership.
       domain: cajun.tools
-      address: ${wallet}
+      address: ${verifyMessageAddress || address || 'unknown'}
       hash: ${hash}
-  `);
+  `), [verifyMessageAddress, address]);
 
-  const signMessage = async () => {
-    if (!address) {
-      return
-    }
-
-    setApprovalInProgress(true)
-    try {
-      await sign(messageText(address));
-      if (!error) {
-        Success('Message signed!');
-      }
-    } catch (e: any) {
-      Error(error as unknown as string);
-    }
-
-    setApprovalInProgress(false)
+  const onError = (error: Error) => {
+    console.log(error);
+    Error(error.message)
   }
+  const { signMessage, data, reset, isLoading } = useSignMessage({ message, onError });
 
   const verifyMessage = async () => {
-    const message = messageText(verifyMessageAddress);
     const match = message.match(/(0x[0-9A-Za-z]+)/g);
     try {
       const signerAddress = utils.verifyMessage(message, verifyMessageText);
@@ -80,7 +68,7 @@ const BatchTransfer= () => {
   }
 
   const signReset = () => {
-    sign('');
+    reset();
     Success('Sign reset!');
   }
 
@@ -92,29 +80,18 @@ const BatchTransfer= () => {
   }
 
   const copySigned = () => {
-    if (!signature) {
+    if (!data) {
       return;
     }
-    navigator.clipboard.writeText(signature).then(() => Success("Copied to clipboard"))
+    navigator.clipboard.writeText(data).then(() => Success("Copied to clipboard"))
   }
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: 10000 }}
-        open={approvalInProgress}
-      >
-        <Box sx={{ m: 1, position: 'relative' }}>
-          <RotatingBox>
-            <FactCheck sx={ { fontSize: '5rem' } }/>
-          </RotatingBox>
-          <Typography>Signing Message...</Typography>
-        </Box>
-      </Backdrop>
       <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
         <Grid item xs={6} sx={{ marginX: 2 }}>
           <Card>
             <CardHeader title="Sign Message" />
-            {signature ? (
+            {data ? (
               <Fragment>
                 <CardContent
                   onMouseOver={() => setHovered(true)}
@@ -126,7 +103,7 @@ const BatchTransfer= () => {
                     multiline
                     minRows={2}
                     maxRows={5}
-                    value={signature}
+                    value={data}
                     disabled
                     variant="filled"
                     sx={{ width: 0.95, pointerEvents: 'none' }}
@@ -160,14 +137,23 @@ const BatchTransfer= () => {
                     multiline
                     minRows={5}
                     maxRows={10}
-                    value={messageText(address || 'unknown')}
+                    value={message}
                     disabled
                     variant="filled"
                     sx={{ width: 0.95, pointerEvents: 'none' }}
                   />
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-around'}}>
-                  <Button variant="contained" disabled={!address} onClick={signMessage}>Sign</Button>
+                  <LoadingButton
+                    variant="contained"
+                    loading={isLoading}
+                    loadingPosition="start"
+                    startIcon={<Edit />}
+                    disabled={!address}
+                    onClick={() => signMessage()}
+                  >
+                    Sign
+                  </LoadingButton>
                 </CardActions>
               </Fragment>
             )}

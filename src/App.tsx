@@ -1,17 +1,20 @@
 import React from 'react';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
-import './App.css';
+import { Box, useTheme } from '@mui/material';
+
+import AppBar from './components/AppBar'
+import AppDrawer from './components/Drawer';
+
 import BatchTransfer from './pages/batchTransfer';
 import TokenImport from "@pages/TokenImport";
 import SignMessage from './pages/signMessage';
 import ERC1155Transfer from '@pages/ERC1155Transfer';
-import AppBar from './components/AppBar'
-import AppDrawer from './components/Drawer';
+import TokenPermit from '@pages/TokenPermit';
 
-import { Box } from '@mui/material';
-
+import './App.css';
 
 function App() {
+
   return (
     <Box
       id="App"
@@ -29,13 +32,27 @@ function App() {
       <BrowserRouter>
         <AppBar />
         <AppDrawer />
-        <Routes>
-          <Route path="/" element={<TokenImport />} />
-          <Route path="/erc1155-transfer" element={<ERC1155Transfer />} />
-          <Route path="/batch-transfer" element={<BatchTransfer />} />
-          <Route path="/sign-message" element={<SignMessage />} />
-          <Route path="/*" element={<Navigate replace to="/" />} />
-        </Routes>
+        <Box
+          sx={{
+            width: {
+              xs: 0.95,
+              sm: 0.8
+            },
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<TokenImport />} />
+            <Route path="/erc1155-transfer" element={<ERC1155Transfer />} />
+            <Route path="/batch-transfer" element={<BatchTransfer />} />
+            <Route path="/sign-message" element={<SignMessage />} />
+            <Route path="/token-permit" element={<TokenPermit />} />
+            <Route path="/*" element={<Navigate replace to="/" />} />
+          </Routes>
+        </Box>
       </BrowserRouter>
     </Box>
   );

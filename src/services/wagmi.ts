@@ -1,6 +1,4 @@
 import { createClient, configureChains, chain } from 'wagmi';
-
-import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 
@@ -12,7 +10,7 @@ import { getDefaultClient } from "connectkit";
 import Chains from '@services/chains';
 
 const chainList = [Chains.avalanche, chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum ];
-const { chains, provider, webSocketProvider } = configureChains(chainList, [
+const { chains, provider } = configureChains(chainList, [
   jsonRpcProvider({
     rpc: (chain) => {
       if (chain.id !== Chains.avalanche.id) return null;

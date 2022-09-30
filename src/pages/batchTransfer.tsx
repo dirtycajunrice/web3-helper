@@ -1,6 +1,4 @@
-import { useAccount, useSigner } from '@web3modal/react';
 import React, { SyntheticEvent, useEffect, useState } from 'react';
-
 import {
   Backdrop,
   Box,
@@ -20,6 +18,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DoNotDisturbOff, FactCheck, TransferWithinAStation } from '@mui/icons-material';
+import { useAccount, useSigner } from 'wagmi';
 
 import NFTUtilitiesABI from '../assets/ABIs/NFTUtilities.json';
 import RotatingBox from '../components/RotatingBox';
@@ -46,7 +45,7 @@ const NFTUtilitiesContract = new Contract(NFTUtilitiesAddress, NFTUtilitiesABI)
 const SignMessage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { address } = useAccount();
-  const { signer } = useSigner();
+  const { data: signer } = useSigner();
   const [transferInProgress, setTransferInProgress] = useState<boolean>(false)
   const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false)
   const [queryingNftIds, setQueryingNftIds] = useState<boolean>(false)

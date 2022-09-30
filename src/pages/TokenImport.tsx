@@ -1,4 +1,3 @@
-import { chainIdToNumber } from '@utils/web3modal';
 import React, { useState } from 'react';
 import { useAsync } from "react-async"
 import {
@@ -18,7 +17,6 @@ import {
 } from "@mui/material";
 
 import { Token, TokenList } from "../types";
-import { getAddChainParameters } from '@components/chains';
 import { useSnackbar } from "notistack";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 

@@ -1,5 +1,4 @@
-import React, { useState, ChangeEvent, Fragment, useEffect, useMemo } from 'react';
-
+import React, { useState, ChangeEvent, Fragment, useMemo } from 'react';
 import {
   Backdrop,
   Box,
@@ -12,23 +11,22 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import {ContentCopy, Edit, FactCheck} from '@mui/icons-material';
-import RotatingBox from '../components/RotatingBox';
+import {ContentCopy, Edit } from '@mui/icons-material';
 import { utils } from 'ethers';
 import {useSnackbar} from "notistack";
 import CheckMarkGif from '../assets/images/checkmark.gif';
 import { useAccount, useSignMessage } from "wagmi";
 import {LoadingButton} from "@mui/lab";
 
-const BatchTransfer= () => {
+const SignMessage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { address } = useAccount();
 
-  const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false);
   const [verified, setVerified] = useState<boolean>();
   const [hovered, setHovered] = useState<boolean>(false);
   const [verifyMessageText, setVerifyMessageText] = useState<string>("");
   const [verifyMessageAddress, setVerifyMessageAddress] = useState<string>("");
+
   const Success = (message: string) => enqueueSnackbar(message, {variant: "success"});
   const Error = (message: string) => enqueueSnackbar(message, {variant: "error"});
 
@@ -227,4 +225,4 @@ const BatchTransfer= () => {
 }
 
 
-export default BatchTransfer
+export default SignMessage;

@@ -20,7 +20,7 @@ import {
   Typography,
 } from '@mui/material';
 
-import { BigNumber, Contract, utils } from 'ethers';
+import { utils } from 'ethers';
 import {useSnackbar} from "notistack";
 
 import RotatingBox from '@components/RotatingBox';
@@ -33,59 +33,6 @@ const CUBadges = '0x03A37A09be3E90bE403e263238c1aCb14a341DEf';
 
 const PageUrl = (page: number) =>
   `https://images.cosmicuniverse.io/cosmic-badges/${page}`
-
-const EternalStoryPages: {[index: number]: {[index: string]: string | number | BigNumber}} = {
-  1: {
-    index: 0,
-    img: '5a5c934a',
-    balance: BigNumber.from(0)
-  },
-  2: {
-    index: 1,
-    img: '302f9e68',
-    balance: BigNumber.from(0)
-  },
-  3: {
-    index: 2,
-    img: '27e2125a',
-    balance: BigNumber.from(0)
-  },
-  4: {
-    index: 3,
-    img: '4153f861',
-    balance: BigNumber.from(0)
-  },
-  5: {
-    index: 4,
-    img: '3aba3aca',
-    balance: BigNumber.from(0)
-  },
-  6: {
-    index: 5,
-    img: '09341d1e',
-    balance: BigNumber.from(0)
-  },
-  7: {
-    index: 6,
-    img: '544bbfd5',
-    balance: BigNumber.from(0)
-  },
-  8: {
-    index: 7,
-    img: '35a0be96',
-    balance: BigNumber.from(0)
-  },
-  9: {
-    index: 8,
-    img: 'fdb8943d',
-    balance: BigNumber.from(0)
-  },
-  //10: {
-  //  index: 9,
-  //  img: '',
-  //  balance: BigNumber.from(0)
-  //},
-}
 
 const Index = () => {
   const { enqueueSnackbar } = useSnackbar();

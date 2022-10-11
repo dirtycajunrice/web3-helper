@@ -9,7 +9,7 @@ import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { getDefaultClient } from "connectkit";
 import Chains from '@services/chains';
 
-const chainList = [Chains.avalanche, chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum ];
+const chainList = [Chains.bobaAvaxL2, Chains.avalanche, chain.mainnet, chain.polygon, chain.optimism, chain.arbitrum ];
 const { chains, provider } = configureChains(chainList, [
   jsonRpcProvider({
     rpc: (chain) => {

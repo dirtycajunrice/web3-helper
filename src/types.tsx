@@ -17,6 +17,7 @@ export interface Token {
     name: string
     decimals: number
     logoURI: string
+    tags?: string[]
 }
 export interface TokenList {
     keywords: string[]

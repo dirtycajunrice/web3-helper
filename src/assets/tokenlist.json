@@ -1,0 +1,121 @@
+{
+  "name": "Tradescrow ERC20",
+  "timestamp": "2022-03-15T11:24:11.527Z",
+  "version": {
+    "major": 1,
+    "minor": 1,
+    "patch": 0
+  },
+  "keywords": [
+    "tradescrow",
+    "approved",
+    "consolidated"
+  ],
+  "logoURI": "https://tradescrow.s3.us-east-2.amazonaws.com/black/logo.png",
+  "tags": {
+    "ERC721": {
+      "name": "ERC721",
+      "description": "ERC721"
+    },
+    "ERC1155": {
+      "name": "ERC1155",
+      "description": "ERC1155"
+    },
+    "ERC20": {
+      "name": "ERC20",
+      "description": "ERC20"
+    }
+  },
+  "tokens": [
+    {
+      "chainId": 43114,
+      "address": "0x42006Ab57701251B580bDFc24778C43c9ff589A1",
+      "symbol": "EVO",
+      "name": "EVO",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/EVO.png",
+      "tags": ["ERC20"]
+    },
+    {
+      "chainId": 43114,
+      "address": "0x53f0E805bDFa8418213aC7e306e1C0B6c9e44714",
+      "symbol": "vEVO",
+      "name": "vEVO",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/vEVO.png",
+      "tags": ["ERC20"]
+    },
+    {
+      "chainId": 43114,
+      "address": "0x7B5501109c2605834F7A4153A75850DB7521c37E",
+      "symbol": "cEVO",
+      "name": "cEVO",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/cEVO.png",
+      "tags": ["ERC20"]
+    },
+    {
+      "chainId": 43114,
+      "address": "0x9c6291b4a30C6662aA9723e7345137e71975b20f",
+      "symbol": "xEVO",
+      "name": "xEVO",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/xEVO.png",
+      "tags": ["ERC20"]
+    },
+    {
+      "chainId": 43114,
+      "address": "0x454a0E479ac78e508a95880216C06F50bf3C321C",
+      "symbol": "Evo",
+      "name": "Evo",
+      "decimals": 0,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/EVO.png",
+      "tags": ["ERC721"]
+    },
+    {
+      "chainId": 43114,
+      "address": "0x75dDd2b19E6f7BEd3Bfe9D2D21dd226C38C0CbC4",
+      "symbol": "EvoEggG0",
+      "name": "Evo Egg Gen0",
+      "decimals": 0,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/EVO.png",
+      "tags": ["ERC721"]
+    },
+    {
+      "chainId": 43288,
+      "address": "0xc8849f32138de93F6097199C5721a9EfD91ceE01",
+      "symbol": "EVO",
+      "name": "EVO",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/EVO.png",
+      "tags": ["ERC20"]
+    },
+    {
+      "chainId": 43288,
+      "address": "0x9649786490349c990CD91D417db6228292f51D92",
+      "symbol": "xEVO",
+      "name": "xEVO",
+      "decimals": 18,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/xEVO.png",
+      "tags": ["ERC20"]
+    },
+    {
+      "chainId": 43288,
+      "address": "0x3e9694a37846C864C67253af6F5d1F534ff3BF46",
+      "symbol": "Evo",
+      "name": "Evo",
+      "decimals": 0,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/EVO.png",
+      "tags": ["ERC721"]
+    },
+    {
+      "chainId": 43288,
+      "address": "0xa3b63C50F0518aAaCf5cF4720B773e1371D10eBF",
+      "symbol": "EvoEgg",
+      "name": "Evo Egg",
+      "decimals": 0,
+      "logoURI": "https://raw.githubusercontent.com/EvoVerses/public-assets/main/tokens/EVO.png",
+      "tags": ["ERC721"]
+    }
+  ]
+}

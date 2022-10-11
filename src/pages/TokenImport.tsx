@@ -15,7 +15,7 @@ import {
   Select,
   SelectChangeEvent,
 } from "@mui/material";
-
+import LocalTokenList from '@assets/tokenlist.json';
 import { Token, TokenList } from "../types";
 import { useSnackbar } from "notistack";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
@@ -23,6 +23,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 const TokenListURL = "https://raw.githubusercontent.com/tradescrow/token-lists/main/build/tradescrow-all.tokenlist.json"
 
 const loadTokenList = async (): Promise<TokenList> => {
+  return LocalTokenList
   const res = await fetch(TokenListURL)
   if (!res.ok) throw new Error(res.statusText)
   return res.json()

@@ -45,7 +45,7 @@ const Index = () => {
   const [toQuantity, setToQuantity] = useState<number>(0)
   const [imageViewer, setImageViewer] = useState({ src: '', open: false });
 
-  const ids = [0, 1, 2, 3, 4, 5, 6];
+  const ids = [0, 1, 2, 3, 4, 5, 6, 7];
   const addresses = Array(ids.length).fill(address);
 
   const contractRead = useContractRead({

@@ -108,7 +108,7 @@ const TokenImport = () => {
         )}
         {data && (
           data.tokens
-            .filter(token => token.chainId.toString() === filter || filter === "all")
+            .filter(token => token.chainId === Number(filter) || filter === "all")
             .map(token => (
             <Grid item
                   xs={12}

@@ -16,7 +16,7 @@ ReactDOM.render(
         <RainbowKitProvider
           chains={chains}
           appInfo={{ appName: "Web3 Helper" }}
-          theme={darkTheme({accentColor: 'dark'})}
+          theme={darkTheme()}
         >
           <SnackbarProvider maxSnack={3}>
             <App />

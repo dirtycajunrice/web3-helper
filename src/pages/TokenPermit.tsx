@@ -1,4 +1,3 @@
-import chains from '@services/chains';
 import { selectGlobalLoading } from '@state/global/hooks';
 import { setGlobalLoading } from '@state/global/reducer';
 import { useAppDispatch, useAppSelector } from '@state/hooks';
@@ -32,9 +31,10 @@ import { Edit } from '@mui/icons-material';
 import { useSnackbar } from "notistack";
 import { useAccount, useSigner, useNetwork } from 'wagmi';
 import {LoadingButton} from "@mui/lab";
+import { chains } from "@utils/blockchain";
 
 const allowedTokens = {
-  [chains.avalanche.id]: {
+  [chains[2].id]: {
     cEVO: '0x7B5501109c2605834F7A4153A75850DB7521c37E'
   }
 }

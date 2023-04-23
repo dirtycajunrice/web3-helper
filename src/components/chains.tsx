@@ -67,14 +67,6 @@ export function getAddChainParameters(chainId: number): AddChainParameter | numb
 }
 
 export const CHAINS: { [chainId: number]: ChainInformation } = {
-    1: {
-        urls: ['https://cloudflare-eth.com'],
-        name: 'Ethereum',
-        nativeCurrency: ETH,
-        blockExplorerUrls: ['https://etherscan.io'],
-        enabled: false,
-        testnet: false,
-    },
     56: {
         urls: ['https://bsc-dataseed.binance.org/'],
         name: 'Smart Chain',
@@ -102,11 +94,10 @@ export const CHAINS: { [chainId: number]: ChainInformation } = {
     53935: {
         urls: [
             'https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc',
-            'https://rpc.dfkchain.com',
         ],
         name: 'DFK Chain',
         nativeCurrency: JEWEL,
-        blockExplorerUrls: ['https://explorer.dfkchain.com/'],
+        blockExplorerUrls: ['https://subnets.avax.network/defi-kingdoms/'],
         enabled: true,
         testnet: false,
     },
@@ -153,25 +144,6 @@ export const CHAINS: { [chainId: number]: ChainInformation } = {
         enabled: false,
         testnet: true,
     },
-    1666600000: {
-        urls: [
-            "https://api.harmony.one",
-            "https://rpc.cosmicuniverse.one"
-        ],
-        name: 'Harmony',
-        nativeCurrency: ONE,
-        blockExplorerUrls: ['https://explorer.harmony.one'],
-        enabled: true,
-        testnet: false,
-    },
-    1666700000: {
-        urls: ["https://api.s0.b.hmny.io"],
-        name: 'Harmony Testnet',
-        nativeCurrency: ONE,
-        blockExplorerUrls: ['https://explorer.pops.one'],
-        enabled: true,
-        testnet: true,
-    }
 }
 
 export const ENABLED_CHAINS =

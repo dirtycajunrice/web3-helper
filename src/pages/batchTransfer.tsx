@@ -18,9 +18,9 @@ import {
   Typography,
 } from '@mui/material';
 import { DoNotDisturbOff, FactCheck, TransferWithinAStation } from '@mui/icons-material';
-import { useAccount, useSigner } from 'wagmi';
+import { useAccount, useSigner, useNetwork } from 'wagmi';
 
-import NFTUtilitiesABI from '../assets/ABIs/NFTUtilities.json';
+import NFTUtilitiesABI from '@assets/ABIs/NFTUtilities';
 import RotatingBox from '../components/RotatingBox';
 import { BigNumber, Contract, utils } from 'ethers';
 import {useSnackbar} from "notistack";
@@ -34,10 +34,13 @@ const MiniERC721ABI = [
   "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)"
 ]
 
-const HeroAddress = '0x5F753dcDf9b1AD9AabC1346614D1f4746fd6Ce5C'
-const Wizards2DAddress = '0x37f47c343bfaf27a52bc1bd468b49d8e5ef89d67'
+const HeroAddress: { [index: number]: string } = {
+  53935: "0xEb9B61B145D6489Be575D3603F4a704810e143dF",
+  1001: "0x268CC8248FFB72Cd5F3e73A9a20Fa2FF40EfbA61"
+}
+
 const Wizards3DAddress = '0xdc59f32a58ba536f639ba39c47ce9a12106b232b'
-const NFTUtilitiesAddress = '0x6F16924A4C10d525E0f03700e25259AD0d6f0591'
+const NFTUtilitiesAddress = '0xB971c953d1BCa12329a769BD043b4fb4b466aE43'
 
 const NFTUtilitiesContract = new Contract(NFTUtilitiesAddress, NFTUtilitiesABI)
 
@@ -45,11 +48,12 @@ const NFTUtilitiesContract = new Contract(NFTUtilitiesAddress, NFTUtilitiesABI)
 const SignMessage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { address } = useAccount();
+  const { chain } = useNetwork();
   const { data: signer } = useSigner();
   const [transferInProgress, setTransferInProgress] = useState<boolean>(false)
   const [approvalInProgress, setApprovalInProgress] = useState<boolean>(false)
   const [queryingNftIds, setQueryingNftIds] = useState<boolean>(false)
-  const [nftCollectionAddress, setNftCollectionAddress] = useState<string>(HeroAddress)
+  const [nftCollectionAddress, setNftCollectionAddress] = useState<string>(HeroAddress[53935])
   const [toAddress, setToAddress] = useState<string>("")
   const [nftIds, setNftIds] = useState<number[]>([])
   const [isApprovedForAll, setIsApprovedForAll] = useState<boolean>(false)
@@ -66,7 +70,10 @@ const SignMessage = () => {
     const getBalances = async (interval?: boolean) => {
       const contract = new Contract(nftCollectionAddress, MiniERC721ABI, signer)
       const address = await signer.getAddress()
-      if (nftCollectionAddress === HeroAddress) {
+      if (![53935, 1001, 43114].includes(chain?.id || 0)) {
+        return;
+      }
+      if (Object.values(HeroAddress).includes(nftCollectionAddress)) {
         const rawHeroIds: BigNumber[] = await contract.getUserHeroes(address)
         setNftIds(rawHeroIds.map(h => h.toNumber()))
       } else {
@@ -118,12 +125,12 @@ const SignMessage = () => {
     setTransferInProgress(true)
     const contract = NFTUtilitiesContract.connect(signer)
     try {
-      const tx = await contract.batchTransfer721(address, toAddress, nftCollectionAddress, selectedNftIds)
+      const tx = await contract.batchTransfer721(toAddress, nftCollectionAddress, selectedNftIds)
       await tx.wait(1)
       Success(`Sent ${selectedNftIds.length} heroes to ${ toAddress }`)
       setSelectedNftIds([])
-    } catch (e) {
-      Error(`${e}`)
+    } catch (e: any) {
+      Error(`${e.error.message || e}`)
       console.log(e)
     }
     setTransferInProgress(false)
@@ -198,10 +205,15 @@ const SignMessage = () => {
                     value={nftCollectionAddress}
                     label="NFT Collection"
                     onChange={handleNFTCollection}
+                    disabled={![43114, 1001, 53935].includes(chain?.id || 0)}
                   >
-                    <MenuItem value={HeroAddress} selected>DFK Hero</MenuItem>
-                    <MenuItem value={Wizards2DAddress} selected>2D Wizards</MenuItem>
-                    <MenuItem value={Wizards3DAddress} selected>3D Wizards</MenuItem>
+                    <MenuItem
+                      disabled={!Object.keys(HeroAddress).includes(String(chain?.id))}
+                      value={HeroAddress[Object.keys(HeroAddress).includes(String(chain?.id)) ? (chain?.id || 53935) : 53935]}
+                    >
+                      DFK Hero
+                    </MenuItem>
+                    <MenuItem disabled={chain?.id !== 43114} value={Wizards3DAddress} selected>Cosmic Wizards</MenuItem>
                   </Select>
                 </FormControl>
                 <TextField
@@ -210,6 +222,7 @@ const SignMessage = () => {
                   fullWidth helperText="Address of the wallet you are sending to"
                   value={toAddress}
                   onChange={handleToAddressChange}
+                  disabled={![43114, 1001, 53935].includes(chain?.id || 0)}
                 />
                 <FormControl fullWidth sx={{ marginBottom: 1, marginTop: 1 }}>
                   <InputLabel id="hero-select-label">NFTs</InputLabel>
@@ -227,6 +240,7 @@ const SignMessage = () => {
                         ))}
                       </Box>
                     )}
+                    disabled={![43114, 1001, 53935].includes(chain?.id || 0)}
                   >
                     {nftIds.sort().map((id) => (
                       <MenuItem
@@ -238,6 +252,9 @@ const SignMessage = () => {
                     ))}
                   </Select>
                 </FormControl>
+                {![43114, 1001, 53935].includes(chain?.id || 0) && (
+                  <Typography variant="h6" sx={{ marginBottom: 1, color: 'red' }}>Please switch to a supported chain</Typography>
+                )}
                 {queryingNftIds && <LinearProgress />}
 
               </Box>
@@ -258,6 +275,7 @@ const SignMessage = () => {
               <Button
                 variant="contained"
                 onClick={handleApproveForAll}
+                disabled={![43114, 1001, 53935].includes(chain?.id || 0)}
               >
                 {isApprovedForAll ? "Deny" : "Approve"} Contract
               </Button>

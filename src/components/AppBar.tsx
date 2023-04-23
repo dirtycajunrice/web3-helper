@@ -1,12 +1,14 @@
+
+import "@rainbow-me/rainbowkit/styles.css";
 import { useAppDispatch } from '@state/hooks';
 import { setUiComponent } from '@state/ui/reducer';
 import { Component } from '@state/ui/types';
 import React from 'react';
-import { Box, AppBar, Toolbar, Typography, IconButton } from '@mui/material'
+import { Box, AppBar, Toolbar, Typography, IconButton, CssBaseline } from '@mui/material'
 
 import MenuIcon from '@mui/icons-material/Menu';
 import { useLocation } from 'react-router-dom';
-import {ConnectKitButton} from "connectkit";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const TopAppBar = () => {
   const location = useLocation();
@@ -44,12 +46,9 @@ const TopAppBar = () => {
           </Typography>
 
           <Box sx={{ position: 'absolute', right: '16px' }}>
-            <ConnectKitButton
-              showBalance
-              customTheme={{
-                "--ck-overlay-background": "rgba(255, 0, 0, 0.5)",
-              }}
-            />
+            <Box sx={{ display: 'flex', fontSize: '20px !important' }}>
+              <ConnectButton />
+            </Box>
           </Box>
         </Toolbar>
       </AppBar>

@@ -49,16 +49,16 @@ const Index = () => {
   const addresses = Array(ids.length).fill(address);
 
   const contractRead = useContractRead({
-    addressOrName: CUBadges,
+    address: CUBadges,
     functionName: 'balanceOfBatch',
-    contractInterface: ERC1155Artifact.abi,
+    abi: ERC1155Artifact.abi,
     args: [addresses, ids],
     chainId: 43114
   })
 
   const { config } = usePrepareContractWrite({
-    addressOrName: CUBadges,
-    contractInterface: ERC1155Artifact.abi,
+    address: CUBadges,
+    abi: ERC1155Artifact.abi,
     functionName: 'safeTransferFrom',
     args: [address, toAddress, transferPageIndex, toQuantity, []]
   })
@@ -111,8 +111,8 @@ const Index = () => {
   useEffect(() => {
     const transferInBounds = (): boolean =>
       contractRead.data
-      && contractRead.data[transferPageIndex].gt(0)
-      && contractRead.data[transferPageIndex].gte(toQuantity)
+      && (contractRead.data as any)[transferPageIndex].gt(0)
+      && (contractRead.data as any)[transferPageIndex].gte(toQuantity)
       && (toQuantity > 0)
 
     const isValidAddress = (): boolean => {
@@ -149,7 +149,7 @@ const Index = () => {
         </Box>
       </Backdrop>
       <Grid container spacing={2} sx={{ justifyContent: "center", alignItems: "center", display: "flex" }}>
-        {contractRead.data && contractRead.data
+        {contractRead.data && (contractRead.data as any)
           .map((balance, id) => (
             <Grid item
                   xs={12}
@@ -216,12 +216,12 @@ const Index = () => {
             />
             <TextField
               sx={{ marginTop: 1}}
-              inputProps={{ min: 1, max: contractRead.data?.[transferPageIndex].toNumber(), step: 1}}
+              inputProps={{ min: 1, max: (contractRead.data as any)?.[transferPageIndex].toNumber(), step: 1}}
               type='number'
               label="Quantity"
               value={toQuantity}
               onChange={handleQuantityChange}
-              fullWidth helperText={`Number of pages to send. Min: 1 | Max: ${contractRead.data?.[transferPageIndex]?.toNumber()}`}
+              fullWidth helperText={`Number of pages to send. Min: 1 | Max: ${(contractRead.data as any)?.[transferPageIndex]?.toNumber()}`}
             />
           </Box>
 

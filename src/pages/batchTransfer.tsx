@@ -19,10 +19,11 @@ import {
 } from '@mui/material';
 import { DoNotDisturbOff, FactCheck, TransferWithinAStation } from '@mui/icons-material';
 import { useAccount, useSigner, useNetwork } from 'wagmi';
+import { multicall } from '@wagmi/core';
 
 import NFTUtilitiesABI from '@assets/ABIs/NFTUtilities';
 import RotatingBox from '../components/RotatingBox';
-import { BigNumber, Contract, utils } from 'ethers';
+import { BigNumber, constants, Contract, utils } from 'ethers';
 import {useSnackbar} from "notistack";
 
 const MiniERC721ABI = [
@@ -31,7 +32,8 @@ const MiniERC721ABI = [
   "function isApprovedForAll(address owner, address operator) view returns (bool)",
   "function getUserHeroes(address _address) view returns (uint256[])",
   "function balanceOf(address owner) view returns (uint256 balance)",
-  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)"
+  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
+  "function getHero(uint256 _id) view returns (tuple(uint256 id, tuple(uint256 summonedTime, uint256 nextSummonTime, uint256 summonerId, uint256 assistantId, uint32 summons, uint32 maxSummons) summoningInfo, tuple(uint256 statGenes, uint256 visualGenes, uint8 rarity, bool shiny, uint16 generation, uint32 firstName, uint32 lastName, uint8 shinyStyle, uint8 class, uint8 subClass) info, tuple(uint256 staminaFullAt, uint256 hpFullAt, uint256 mpFullAt, uint16 level, uint64 xp, address currentQuest, uint8 sp, uint8 status) state, tuple(uint16 strength, uint16 intelligence, uint16 wisdom, uint16 luck, uint16 agility, uint16 vitality, uint16 endurance, uint16 dexterity, uint16 hp, uint16 mp, uint16 stamina) stats, tuple(uint16 strength, uint16 intelligence, uint16 wisdom, uint16 luck, uint16 agility, uint16 vitality, uint16 endurance, uint16 dexterity, uint16 hpSm, uint16 hpRg, uint16 hpLg, uint16 mpSm, uint16 mpRg, uint16 mpLg) primaryStatGrowth, tuple(uint16 strength, uint16 intelligence, uint16 wisdom, uint16 luck, uint16 agility, uint16 vitality, uint16 endurance, uint16 dexterity, uint16 hpSm, uint16 hpRg, uint16 hpLg, uint16 mpSm, uint16 mpRg, uint16 mpLg) secondaryStatGrowth, tuple(uint16 mining, uint16 gardening, uint16 foraging, uint16 fishing) professions))"
 ]
 
 const HeroAddress: { [index: number]: string } = {
@@ -56,6 +58,7 @@ const SignMessage = () => {
   const [nftCollectionAddress, setNftCollectionAddress] = useState<string>(HeroAddress[53935])
   const [toAddress, setToAddress] = useState<string>("")
   const [nftIds, setNftIds] = useState<number[]>([])
+  const [invalidNftIds, setInvalidNftIds] = useState<number[]>([])
   const [isApprovedForAll, setIsApprovedForAll] = useState<boolean>(false)
   const [selectedNftIds, setSelectedNftIds] = useState<number[]>([])
   const [transferValidity, setTransferValidity] = useState<boolean>(false)
@@ -75,6 +78,15 @@ const SignMessage = () => {
       }
       if (Object.values(HeroAddress).includes(nftCollectionAddress)) {
         const rawHeroIds: BigNumber[] = await contract.getUserHeroes(address)
+        const r = await multicall({
+          contracts: rawHeroIds.map(id => ({
+            address: contract.address as any,
+            abi: MiniERC721ABI,
+            functionName: 'getHero',
+            args: [id]
+          }))
+        })
+        setInvalidNftIds(r.filter(v => (v as any).state.currentQuest !== constants.AddressZero).map(v => (v as any).id.toNumber()))
         setNftIds(rawHeroIds.map(h => h.toNumber()))
       } else {
         if (!interval) {
@@ -96,7 +108,7 @@ const SignMessage = () => {
       setIsApprovedForAll(approved)
     }
     getBalances()
-    const interval = setInterval(getBalances, 5000, true)
+    const interval = setInterval(getBalances, 30000, true)
     return () => {
       clearInterval(interval)
     }
@@ -165,8 +177,8 @@ const SignMessage = () => {
     setNftCollectionAddress((event.target as HTMLSelectElement).value)
     setSelectedNftIds([])
     setNftIds([])
+    setInvalidNftIds([])
   }
-
   return (
     <Box sx={{ width: 0.8, marginTop: 8 }}>
       <Backdrop
@@ -246,6 +258,7 @@ const SignMessage = () => {
                       <MenuItem
                         key={id}
                         value={id}
+                        disabled={invalidNftIds.includes(id)}
                       >
                         {"#"+id}
                       </MenuItem>

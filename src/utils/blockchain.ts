@@ -24,7 +24,7 @@ import {
 const appName = 'DFKHelper';
 
 const defaultChains: Chain[] = [
-  mainnet, dfk, avalanche
+  mainnet, avalanche, {...dfk, contracts: { multicall3: { address: '0xcA11bde05977b3631167028862bE2a173976CA11', blockCreated: 14790551 } }}
 ]
 const { chains, provider } = configureChains(
   defaultChains,
